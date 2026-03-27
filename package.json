@@ -16,7 +16,10 @@
     "dist"
   ],
   "scripts": {
+    "postinstall": "node -e \"const fs=require('fs');const p='node_modules/@types/react';const q='node_modules/@types/__react';if(fs.existsSync(p))fs.renameSync(p,q);\"",
+    "prebuild": "node -e \"const fs=require('fs');const p='node_modules/@types/__react';const q='node_modules/@types/react';if(fs.existsSync(p))fs.renameSync(p,q);\"",
     "build": "tsup",
+    "postbuild": "node -e \"const fs=require('fs');const p='node_modules/@types/react';const q='node_modules/@types/__react';if(fs.existsSync(p))fs.renameSync(p,q);\"",
     "dev": "tsup --watch",
     "prepublishOnly": "npm run build"
   },
@@ -33,9 +36,12 @@
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
-    "esbuild-sass-plugin": "^3.7.0",
-    "sass": "^1.98.0",
-    "tsup": "^6.7.0",
-    "typescript": "^5.9.3"
+    "esbuild-sass-plugin": "^2.16.0",
+    "sass": "^1.69.0",
+    "tsup": "^5.12.9",
+    "typescript": "^4.9.5"
+  },
+  "engines": {
+    "node": ">=14.16.1"
   }
 }

@@ -1,6 +1,6 @@
 export const LABELS = {
   // Page title
-  TITLE: '<<< On-Screen Logger >>>',
+  TITLE: '<<< Darietto On-Screen Logger >>>',
 
   // Section headings
   SECTION_RETURN: 'Return to Main App Options',
