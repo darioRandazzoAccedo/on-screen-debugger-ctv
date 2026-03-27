@@ -1,0 +1,312 @@
+// CSS custom property defaults — host apps can override these on :root
+:root {
+  --debugger-font-family: monospace;
+  --debugger-brand-color: #cc0000;
+  --debugger-text-color: #ffffff;
+  --debugger-bg-color: #808080;
+  --debugger-item-bg: #dcdcdc;
+  --debugger-black: #000000;
+  --debugger-z-index: 20;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--debugger-z-index, 20);
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  &-admin-ui {
+    align-self: flex-end;
+    width: 50%;
+    background-color: var(--debugger-bg-color, #808080);
+    height: 50%;
+
+    &-content {
+      height: vw(550px);
+    }
+  }
+
+  &-quick-actions-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: vw(16px);
+  }
+
+  &-debugger-title {
+    text-align: center;
+    margin: 0 0 vw(32px);
+    color: var(--debugger-text-color, #ffffff);
+    font-family: var(--debugger-font-family, monospace);
+    font-size: vw(38px);
+    font-weight: normal;
+  }
+
+  &-quick-actions-title {
+    text-align: center;
+    margin-top: vw(5px);
+    margin-bottom: vw(5px);
+    color: var(--debugger-text-color, #ffffff);
+    font-family: var(--debugger-font-family, monospace);
+    font-size: vw(30px);
+    font-weight: normal;
+  }
+
+  &-quick-actions-feedback {
+    color: orange;
+  }
+
+  &-quick-actions-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  &-debug-mode-content {
+    width: 100%;
+    background-color: var(--debugger-bg-color, #808080);
+  }
+
+  &-debug-mode-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: vw(550px);
+  }
+
+  &-debug-mode-content-title {
+    color: var(--debugger-text-color, #ffffff);
+    font-family: var(--debugger-font-family, monospace);
+    font-size: vw(38px);
+    font-weight: normal;
+    padding: vw(14px);
+  }
+
+  &-debug-mode-content-data {
+    width: 100%;
+    height: vw(550px);
+  }
+
+  &-debug-mode-content-data-details {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    top: 0;
+    left: 50%;
+    overflow: auto;
+    border: vw(5px) solid var(--debugger-text-color, #ffffff);
+    background-color: var(--debugger-bg-color, #808080);
+
+    &-focused {
+      border: vw(5px) solid var(--debugger-brand-color, #cc0000);
+    }
+
+    &-super-expanded {
+      height: auto;
+      width: auto;
+      top: 0;
+      left: 0;
+    }
+
+    &-params {
+      position: fixed;
+      font-size: vw(30px);
+      line-height: vw(30px);
+      font-weight: bold;
+      font-family: var(--debugger-font-family, monospace);
+      padding: vw(5px);
+      background-color: white;
+      color: var(--debugger-black, #000000);
+    }
+
+    &-extra-params {
+      font-size: vw(20px);
+      line-height: vw(20px);
+      font-weight: normal;
+      color: var(--debugger-text-color, #ffffff);
+      font-family: var(--debugger-font-family, monospace);
+      padding: vw(5px);
+      margin-top: vw(40px);
+    }
+  }
+
+  &-debug-mode-content-data-list {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+  }
+
+  &-debug-mode-content-data-item {
+    display: flex;
+    flex-flow: row;
+    background-color: var(--debugger-item-bg, #dcdcdc);
+    border-radius: vw(10px);
+    margin-bottom: vw(10px);
+    padding: vw(10px);
+    text-align: left;
+    font-family: var(--debugger-font-family, monospace);
+    font-size: vw(20px);
+    color: var(--debugger-black, #000000);
+
+    &-pipe {
+      margin-left: vw(10px);
+      margin-right: vw(10px);
+    }
+
+    &-error {
+      background-color: lightcoral;
+    }
+
+    &-warn {
+      background-color: #fffacd;
+    }
+
+    &-info {
+      background-color: lightblue;
+    }
+
+    &-debug {
+      background-color: lightgreen;
+    }
+
+    &-log {
+      background-color: gainsboro;
+    }
+
+    &-network-traffic {
+      background-color: #c7d48d;
+    }
+
+    &-network-traffic-post {
+      background-color: #a8c8e8;
+    }
+
+    &-network-traffic-put {
+      background-color: #c8b8e8;
+    }
+
+    &-network-traffic-delete {
+      background-color: #e8b8b8;
+    }
+
+    &-focused {
+      background-color: var(--debugger-brand-color, #cc0000);
+    }
+  }
+
+  &-network-traffic-entry {
+    display: flex;
+    align-items: center;
+
+    & > * + * {
+      margin-left: vw(8px);
+    }
+  }
+
+  &-network-traffic-method {
+    font-weight: bold;
+    min-width: vw(60px);
+  }
+
+  &-network-traffic-status {
+    min-width: vw(40px);
+    display: flex;
+    justify-content: right;
+  }
+
+  &-network-traffic-url {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-status-indicator {
+    width: vw(22px);
+    height: vw(12px);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: vw(80px);
+
+    &-success {
+      color: #22c55e;
+    }
+
+    &-redirect {
+      color: #3b82f6;
+    }
+
+    &-client-error {
+      color: #f97316;
+    }
+
+    &-server-error {
+      color: #ef4444;
+    }
+
+    &-unknown {
+      background-color: #9ca3af;
+    }
+  }
+
+  &-status-bar {
+    position: fixed;
+    bottom: vw(16px);
+    right: vw(16px);
+    z-index: 9999;
+    background: rgba(0, 0, 0);
+    color: var(--debugger-text-color, #ffffff);
+    padding: vw(6px) vw(12px);
+    border-radius: vw(4px);
+    font-size: vw(18px);
+    font-weight: bold;
+    pointer-events: none;
+    letter-spacing: 0.05em;
+    border: vw(5px) solid green;
+  }
+
+  &-button {
+    padding: vw(12px) vw(20px);
+    background-color: #333;
+    border-radius: vw(32px);
+    color: var(--debugger-text-color, #ffffff);
+    font-family: var(--debugger-font-family, monospace);
+    font-size: vw(16px);
+    white-space: nowrap;
+    margin-right: vw(8px);
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    &-selected {
+      background-color: darkgray;
+    }
+
+    &-recording-active {
+      background-color: darkgray;
+    }
+
+    &-focused {
+      background-color: var(--debugger-brand-color, #cc0000);
+    }
+  }
+}

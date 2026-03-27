@@ -1,6 +1,6 @@
 import { formatStringWithJson } from '../../utils/onScreenDebuggerUtils';
 import type { LogEntry } from '../../store/debuggerStore';
-import styles from './onScreenDebugger.css';
+import styles from './onScreenDebugger.scss';
 import { LABELS } from './onScreenDebuggerLabels';
 import {
   type OnScreenDebuggerFilterOptions,

@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup';
+import { sassPlugin } from 'esbuild-sass-plugin';
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -12,6 +13,7 @@ export default defineConfig({
     '@accedo/xdk-core',
     '@accedo/xdk-virtual-key',
   ],
+  esbuildPlugins: [sassPlugin()],
   esbuildOptions(options) {
     options.jsx = 'automatic';
   },
