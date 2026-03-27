@@ -160,11 +160,7 @@ const OnScreenDebuggerToolbar = ({
           <Button
             className={styles.modalButton}
             classNameFocused={styles.modalButtonFocused}
-            onClick={() =>
-              debuggerStore
-                .getState()
-                .setQuickKeySequence(!quickKeySequenceEnabled)
-            }
+            onClick={() => debuggerStore.getState().toggleQuickKeySequence()}
             onFocus={() =>
               updateToolbarScroll(nav.QUICK_KEY_SEQUENCE_BUTTON.id)
             }

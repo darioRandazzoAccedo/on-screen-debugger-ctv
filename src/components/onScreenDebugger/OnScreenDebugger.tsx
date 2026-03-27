@@ -86,7 +86,6 @@ const OnScreenDebuggerInner = ({
   const debugModalVisibility = debuggerStore(s => s.debugModalVisibility);
   const debugModalVisibilityRef = useLatest(debugModalVisibility);
   const quickKeySequenceEnabled = debuggerStore(s => s.quickKeySequence);
-  const lastChangeTime = debuggerStore(s => s.lastChangeTime);
   const logs = debuggerStore(s => s.log);
   const debugs = debuggerStore(s => s.debug);
   const infos = debuggerStore(s => s.info);
@@ -428,7 +427,7 @@ const OnScreenDebuggerInner = ({
         ? lastEntryRef.current.id
         : NAV.FOCUS_MAIN_APP_BUTTON,
     );
-  }, [debugModalVisibility, lastChangeTime, adapter]);
+  }, [debugModalVisibility]);
 
   return debugModalVisibility === 'focusable' ||
     debugModalVisibility === 'not-focusable' ? (

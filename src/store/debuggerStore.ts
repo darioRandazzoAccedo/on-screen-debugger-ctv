@@ -166,6 +166,7 @@ interface DebuggerActions {
   setRecordError(value: boolean): void;
   setRecordNetworkTraffic(value: boolean): void;
   setQuickKeySequence(value: boolean): void;
+  toggleQuickKeySequence(): void;
   setShowDebugModal(visibility: DebugModalVisibility): void;
   enableOnScreenDebugger(mode: OnScreenDebuggerMode): void;
   setOnScreenDebuggerEnabledPersistent(
@@ -293,6 +294,8 @@ export const debuggerStore = create<DebuggerStore>((set, get) => ({
   setRecordError: value => set({ recordError: value }),
   setRecordNetworkTraffic: value => set({ recordNetworkTraffic: value }),
   setQuickKeySequence: value => set({ quickKeySequence: value }),
+  toggleQuickKeySequence: () =>
+    set(s => ({ quickKeySequence: !s.quickKeySequence })),
 
   setShowDebugModal: visibility => {
     const { isEnabled } = get();

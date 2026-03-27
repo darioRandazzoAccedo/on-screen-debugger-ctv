@@ -1,4 +1,4 @@
-import type { LogEntry } from '../../store/debuggerStore';
+import type { LogEntry, OnScreenDebuggerMode } from '../../store/debuggerStore';
 import { debuggerStore } from '../../store/debuggerStore';
 import { LABELS } from './onScreenDebuggerLabels';
 
@@ -568,3 +568,30 @@ export const FLUSH_BUTTONS: FlushButtonConfig[] = [
 
 export const getFlushLabel = (label: string) =>
   `(Flushed ${label} at ${new Date().toLocaleTimeString()})`;
+
+export const getDebuggerMode = (): OnScreenDebuggerMode =>
+  debuggerStore.getState().isEnabled;
+
+const VALID_DEBUGGER_MODES: OnScreenDebuggerMode[] = [
+  'off',
+  'active-on-demand',
+  'active-on-start',
+];
+
+export function getDebuggerModeFromStorage(
+  storageKeyPrefix = 'debugger',
+): OnScreenDebuggerMode {
+  try {
+    const stored = localStorage.getItem(
+      `${storageKeyPrefix}_mode`,
+    ) as OnScreenDebuggerMode | null;
+
+    if (stored && VALID_DEBUGGER_MODES.includes(stored)) {
+      return stored;
+    }
+  } catch {
+    // localStorage may not be available
+  }
+
+  return 'off';
+}
