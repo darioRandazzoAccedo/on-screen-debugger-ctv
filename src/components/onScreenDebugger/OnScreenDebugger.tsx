@@ -20,7 +20,7 @@ import useOnScreenDebugger, {
   getLabelForSequence,
 } from '../../hooks/useOnScreenDebugger';
 import { initDebuggerFromStorage } from '../../store/debuggerStore';
-import styles from './onScreenDebugger.scss';
+import styles from './onScreenDebugger.css';
 import { getStatusBarLabel } from './onScreenDebuggerLabels';
 import OnScreenDebuggerEntriesList from './OnScreenDebuggerEntriesList';
 import OnScreenDebuggerEntryDetails from './OnScreenDebuggerEntryDetails';

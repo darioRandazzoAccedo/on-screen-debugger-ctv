@@ -2,7 +2,6 @@
   "name": "on-screen-debugger-ctv",
   "version": "1.0.0",
   "description": "On-screen debugger for TV applications",
-  "files": ["dist"],
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,8 +12,28 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
+    "dev": "tsup --watch",
     "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "@accedo/xdk-core": ">=4",
+    "@accedo/xdk-virtual-key": ">=4"
+  },
+  "dependencies": {
+    "classnames": "^2.0.0",
+    "mitt": "^3.0.0",
+    "react-use-event-hook": "^0.9.6",
+    "zustand": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "tsup": "^6.0.0",
+    "typescript": "^5.0.0"
   }
 }

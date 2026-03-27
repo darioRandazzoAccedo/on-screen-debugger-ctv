@@ -5,7 +5,7 @@ import FocusDiv from '../internal/FocusDiv';
 import Button from '../internal/Button';
 import type { LogEntry } from '../../store/debuggerStore';
 import { getDebugEntryAriaLabel } from './onScreenDebuggerLabels';
-import styles from './onScreenDebugger.scss';
+import styles from './onScreenDebugger.css';
 import { HALF_HEIGHT_MODAL } from './onScreenDebuggerUtils';
 
 const DEFAULT_CONTEXT = 1920;

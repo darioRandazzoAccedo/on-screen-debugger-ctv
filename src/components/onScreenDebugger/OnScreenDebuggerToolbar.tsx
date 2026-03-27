@@ -4,7 +4,7 @@ import FocusDiv from '../internal/FocusDiv';
 import Button from '../internal/Button';
 import DebuggerScroll from '../internal/DebuggerScroll';
 import { debuggerStore } from '../../store/debuggerStore';
-import styles from './onScreenDebugger.scss';
+import styles from './onScreenDebugger.css';
 import {
   LABELS,
   getAutoDetailsFocusLabel,
