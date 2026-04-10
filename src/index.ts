@@ -7,6 +7,7 @@ export {
   getIsOnScreenDebuggerActiveSync,
 } from './store/onScreenDebuggerStore';
 export { default as useToggleDebugModal } from './hooks/useToggleDebugModal';
+export { default as OnScreenDebugger } from './OnScreenDebugger';
 export type {
   LogEntry,
   DebugModalVisibility,

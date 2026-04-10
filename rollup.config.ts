@@ -25,7 +25,7 @@ export default [
       typescript({ tsconfig: './tsconfig.build.json' }),
       postcss({
         modules: true,
-        extract: 'style.css',
+        inject: true,
         use: ['sass'],
       }),
     ],
