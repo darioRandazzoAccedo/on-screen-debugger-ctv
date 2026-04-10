@@ -75,7 +75,7 @@ export class Lrud {
    * @param {string} eventName - event to subscribe to
    * @param {function} callback - function to call on event
    */
-  on(eventName: string, callback: Handler<Node>): void {
+  on<T = Node>(eventName: string, callback: Handler<T>): void {
     this.emitter.on(eventName, callback);
   }
 
@@ -1192,11 +1192,11 @@ export class Lrud {
       this.setActiveChildRecursive(node.parent, node);
     }
 
+    this.emitter.emit('focus', node);
+
     if (node.onFocus) {
       node.onFocus(node);
     }
-
-    this.emitter.emit('focus', node);
   }
 
   /**

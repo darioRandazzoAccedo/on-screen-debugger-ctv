@@ -1,22 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
-/**
- * Like useEffect, but skips the first render (runs only on updates).
- */
-export default function useUpdateEffect(
-  effect: () => void | (() => void),
-  deps: React.DependencyList,
-) {
-  const isMounted = useRef(false);
+export default function useUpdateEffect(callback: () => void, inputs: any[]) {
+  const didMountRef = useRef(false);
 
   useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true;
-
-      return undefined;
+    if (didMountRef.current) {
+      callback();
+    } else {
+      didMountRef.current = true;
     }
-
-    return effect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, inputs);
 }

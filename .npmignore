@@ -1,5 +1,0 @@
-src/
-*.config.ts
-tsconfig.json
-.gitignore
-*.log
