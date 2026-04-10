@@ -10,6 +10,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./dist/OnScreenDebugger": {
+      "import": "./dist/OnScreenDebugger.js",
+      "require": "./dist/OnScreenDebugger.cjs",
+      "types": "./dist/OnScreenDebugger.d.ts"
     }
   },
   "files": [
