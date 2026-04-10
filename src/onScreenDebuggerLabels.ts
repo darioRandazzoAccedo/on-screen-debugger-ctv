@@ -1,6 +1,6 @@
 export const LABELS = {
   // Page title
-  TITLE: '<<< On-Screen Logger >>>',
+  TITLE: '<<< On-Screen Darione >>>',
 
   // Section headings
   SECTION_RETURN: 'Return to Main App Options',
@@ -12,8 +12,7 @@ export const LABELS = {
   SECTION_FILTER_NETWORK_API: 'Filter by Network API',
 
   // Section descriptions
-  DESC_RETURN:
-    'Choose how this tool should behave after returning to the main app.',
+  DESC_RETURN: 'Choose how this tool should behave after returning to the main app.',
   DESC_SETTINGS: 'Other tool settings.',
   DESC_RECORDING: 'Select what kind of traffic needs to be catched. ',
   DESC_FLUSH: 'Flush currently recorded entries by type.',
@@ -76,8 +75,7 @@ export const LABELS = {
     'PRESS BACK TO RETURN TO THE (HIDDEN) MENU ABOVE, PRESS ENTER TO FOCUS DETAILS',
   PRESS_BACK_TO_RETURN_ENTRIES:
     'PRESS BACK TO FOCUS AGAIN THE ENTRIES LIST, PRESS ENTER TO EXPAND DETAILS',
-  PRESS_BACK_TO_RETURN_NORMAL_VIEW:
-    'PRESS ENTER OR BACK TO RETURN TO THE NORMAL VIEW',
+  PRESS_BACK_TO_RETURN_NORMAL_VIEW: 'PRESS ENTER OR BACK TO RETURN TO THE NORMAL VIEW',
   PRESS_SEQUENCE_TO_FOCUS_TOOL: 'PRESS [<sequence>] TO FOCUS THE TOOL',
   FOCUS_TOOL: 'GO TO USER PAGE (MY GEM) > DEV OPTIONS > FOCUS TOOL',
   SCROLL_DOWN_TO_VIEW_ENTRIES: 'SCROLL DOWN TO VIEW ENTRIES',
@@ -125,11 +123,9 @@ export const getAutoRefreshLabel = (isOn: boolean) =>
 export const getQuickKeySequenceLabel = (sequence: string, isOn: boolean) =>
   `${LABELS.BTN_INVOKE_TOOL_SEQUENCE} [${sequence}] ${isOn ? '(ON)' : '(OFF)'}`;
 
-export const getFilterCountLabel = (name: string, count: number) =>
-  `${name} (${count})`;
+export const getFilterCountLabel = (name: string, count: number) => `${name} (${count})`;
 
-export const getDebugEntryAriaLabel = (index: number) =>
-  `Debug entry ${index + 1}`;
+export const getDebugEntryAriaLabel = (index: number) => `Debug entry ${index + 1}`;
 
 export const getStatusBarLabel = (
   debugModalVisibility: 'hidden' | 'not-focusable' | 'focusable',
@@ -137,13 +133,10 @@ export const getStatusBarLabel = (
   focusDetailsMode: boolean,
   isDataDetailsSuperExpanded: boolean,
   sequenceLabel: string,
-  quickKeySequenceEnabled: boolean,
+  quickKeySequenceEnabled: boolean
 ): string => {
   if (debugModalVisibility === 'not-focusable' && quickKeySequenceEnabled) {
-    return LABELS.PRESS_SEQUENCE_TO_FOCUS_TOOL.replace(
-      '<sequence>',
-      sequenceLabel,
-    );
+    return LABELS.PRESS_SEQUENCE_TO_FOCUS_TOOL.replace('<sequence>', sequenceLabel);
   }
 
   if (debugModalVisibility === 'not-focusable' && !quickKeySequenceEnabled) {
@@ -158,19 +151,11 @@ export const getStatusBarLabel = (
     return LABELS.PRESS_BACK_TO_RETURN_NORMAL_VIEW;
   }
 
-  if (
-    debugModalVisibility === 'focusable' &&
-    renderContentDataDetails &&
-    focusDetailsMode
-  ) {
+  if (debugModalVisibility === 'focusable' && renderContentDataDetails && focusDetailsMode) {
     return LABELS.PRESS_BACK_TO_RETURN_ENTRIES;
   }
 
-  if (
-    debugModalVisibility === 'focusable' &&
-    renderContentDataDetails &&
-    !focusDetailsMode
-  ) {
+  if (debugModalVisibility === 'focusable' && renderContentDataDetails && !focusDetailsMode) {
     return LABELS.PRESS_BACK_TO_RETURN_MENU;
   }
 

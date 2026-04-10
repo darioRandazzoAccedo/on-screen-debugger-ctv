@@ -38,7 +38,7 @@ module.exports = {
     'import/no-extraneous-dependencies': [
       'error',
       {
-        devDependencies: ['rollup.config.ts'],
+        devDependencies: ['tsup.config.ts'],
         peerDependencies: true,
       },
     ],
@@ -48,6 +48,15 @@ module.exports = {
     eqeqeq: ['error', 'always'],
   },
   overrides: [
+    {
+      // Root-level config files are not part of the src tsconfig — disable
+      // project-based type-aware linting so ESLint can still parse them.
+      files: ['*.config.ts', '*.config.js'],
+      parserOptions: { project: null },
+      rules: {
+        '@typescript-eslint/consistent-type-imports': 'off',
+      },
+    },
     {
       // Relax rules in ambient declaration files
       files: ['src/types/**/*.d.ts', '*.d.ts'],
