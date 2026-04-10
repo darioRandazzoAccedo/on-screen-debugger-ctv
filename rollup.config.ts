@@ -24,7 +24,8 @@ export default [
       commonjs(),
       typescript({ tsconfig: './tsconfig.build.json' }),
       postcss({
-        modules: true,
+        modules: { localsConvention: 'dashesOnly' },
+        autoModules: false,
         inject: true,
         use: ['sass'],
       }),
@@ -42,7 +43,8 @@ export default [
       commonjs(),
       typescript({ tsconfig: './tsconfig.build.json' }),
       postcss({
-        modules: true,
+        modules: { localsConvention: 'dashesOnly' },
+        autoModules: false,
         extract: false,
         use: ['sass'],
       }),
