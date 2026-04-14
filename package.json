@@ -1,6 +1,6 @@
 {
   "name": "@accedo/onscreen-debugger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "On-screen debugger UI component for TV apps",
   "main": "dist/index.cjs",
   "module": "dist/index.js",

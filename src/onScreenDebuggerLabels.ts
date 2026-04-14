@@ -1,6 +1,6 @@
 export const LABELS = {
   // Page title
-  TITLE: '<<< On-Screen Debugger >>>',
+  TITLE: '<<< On-Screen Debugger (1.0.1) >>>',
 
   // Section headings
   SECTION_RETURN: 'Return to Main App Options',
