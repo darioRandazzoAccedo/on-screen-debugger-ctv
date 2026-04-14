@@ -1,6 +1,6 @@
 export const LABELS = {
   // Page title
-  TITLE: '<<< On-Screen Darione >>>',
+  TITLE: '<<< On-Screen Debugger >>>',
 
   // Section headings
   SECTION_RETURN: 'Return to Main App Options',
