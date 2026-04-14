@@ -5,4 +5,6 @@
 - move to master branch
 - setup Github Actions
 - move repo from Dario Randazzo (personal) to shared Accedo tools (organization)
-- delete this file!
+- test this tool with another project
+- use this package in CBC
+- delete this file! (final task!)
