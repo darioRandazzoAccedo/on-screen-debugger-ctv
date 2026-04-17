@@ -34,7 +34,7 @@ const {
   DEBUG_MODE_FETCH_XHR_BUTTON,
   DEBUG_MODE_OTHER_NETWORK_BUTTON,
   DEBUG_MODE_ALL_NETWORK_BUTTON,
-  DEBUG_MODE_ALL_ANALYTICS_BUTTON,
+  DEBUG_MODE_EVERY_API_BUTTON,
   QUICK_ACTIONS_CONTAINER,
   DEBUG_MODE_CONTAINER,
   DEBUG_MODE_NETWORK_CONTAINER,
@@ -71,7 +71,7 @@ export type OnScreenDebuggerFilterOptions =
   | 'fetch_xhr'
   | 'other_network'
   | 'all_network'
-  | 'all_analytics'
+  | 'every_api'
   // Host-defined API keys are strings; `string & {}` avoids collapsing the whole union to `string`.
   | (string & Record<never, never>);
 
@@ -116,7 +116,7 @@ export const getNetworkUrlFilterModes = (
   'other_network',
   'all_network',
   ...(Object.keys(urlPatterns) as OnScreenDebuggerFilterOptions[]),
-  'all_analytics',
+  'every_api',
 ];
 
 // --- Pure functions ---
@@ -180,14 +180,14 @@ export const filterNetworkTraffic = (
 
 /**
  * Filters network traffic entries based on URL patterns.
- * `filterType` is `all_analytics` or a key of `urlPatterns`.
+ * `filterType` is `every_api` or a key of `urlPatterns`.
  */
 export const filterNetworkTrafficByUrl = (
   entries: LogEntry[],
-  filterType: 'all_analytics' | string,
+  filterType: 'every_api' | string,
   urlPatterns: Record<string, string>
 ): LogEntry[] => {
-  if (filterType === 'all_analytics') {
+  if (filterType === 'every_api') {
     const allPatterns = Object.values(urlPatterns);
 
     if (allPatterns.length === 0) {
@@ -352,8 +352,8 @@ export const createNavMap = (
       parent: DEBUG_MODE_NETWORK_CONTAINER,
     },
     ...networkApiNavEntries,
-    DEBUG_MODE_ALL_ANALYTICS_BUTTON: {
-      id: DEBUG_MODE_ALL_ANALYTICS_BUTTON,
+    DEBUG_MODE_EVERY_API_BUTTON: {
+      id: DEBUG_MODE_EVERY_API_BUTTON,
       parent: DEBUG_MODE_NETWORK_API_CONTAINER,
     },
     RECORDING_STATUS_CONTAINER: {
@@ -495,10 +495,10 @@ export const buildNetworkApiFilterButtons = (
   return [
     ...perKey,
     {
-      mode: 'all_analytics',
-      navKey: 'DEBUG_MODE_ALL_ANALYTICS_BUTTON',
-      label: LABELS.BTN_FILTER_ALL_ANALYTICS,
-      ariaLabel: LABELS.ARIA_FILTER_ALL_ANALYTICS,
+      mode: 'every_api',
+      navKey: 'DEBUG_MODE_EVERY_API_BUTTON',
+      label: LABELS.BTN_FILTER_EVERY_API,
+      ariaLabel: LABELS.ARIA_FILTER_EVERY_API,
     },
   ];
 };

@@ -50,7 +50,7 @@ const INITIAL_FILTER_COUNTS: Record<string, number> = {
   fetch_xhr: 0,
   other_network: 0,
   all_network: 0,
-  all_analytics: 0,
+  every_api: 0,
 };
 
 const FIXED_DEBUGGER_FILTERS = new Set<string>([
@@ -63,7 +63,7 @@ const FIXED_DEBUGGER_FILTERS = new Set<string>([
   'fetch_xhr',
   'other_network',
   'all_network',
-  'all_analytics',
+  'every_api',
 ]);
 
 const OnScreenDebugger = () => {
@@ -159,7 +159,7 @@ const OnScreenDebugger = () => {
   useEffect(() => {
     const keys = Object.keys(networkApiUrlPatterns);
 
-    if (debuggerFilter === 'all_analytics' && keys.length === 0) {
+    if (debuggerFilter === 'every_api' && keys.length === 0) {
       setDebuggerFilter('all_terminal');
 
       return;
@@ -208,10 +208,10 @@ const OnScreenDebugger = () => {
         break;
       }
 
-      case 'all_analytics': {
+      case 'every_api': {
         entriesToUpdate = filterNetworkTrafficByUrl(
           networkTraffic,
-          'all_analytics',
+          'every_api',
           networkApiUrlPatterns
         );
         break;
@@ -279,11 +279,8 @@ const OnScreenDebugger = () => {
       fetch_xhr: filterNetworkTraffic(networkTraffic, 'fetch_xhr').length,
       other_network: filterNetworkTraffic(networkTraffic, 'other_network').length,
       all_network: networkTraffic.length,
-      all_analytics: filterNetworkTrafficByUrl(
-        networkTraffic,
-        'all_analytics',
-        networkApiUrlPatterns
-      ).length,
+      every_api: filterNetworkTrafficByUrl(networkTraffic, 'every_api', networkApiUrlPatterns)
+        .length,
     };
 
     Object.keys(networkApiUrlPatterns).forEach(key => {

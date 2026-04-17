@@ -60,7 +60,7 @@ export const LABELS = {
   BTN_FILTER_ALL_NETWORK: 'all',
 
   // Filter by Network API buttons (base names)
-  BTN_FILTER_ALL_ANALYTICS: 'all analytics',
+  BTN_FILTER_EVERY_API: 'every api',
 
   // Detail section prefixes
   DETAIL_URL: 'URL: ',
@@ -105,7 +105,7 @@ export const LABELS = {
   ARIA_FILTER_FETCH_XHR: 'Fetch XHR',
   ARIA_FILTER_OTHER_NETWORK: 'Other Network',
   ARIA_FILTER_ALL_NETWORK: 'All Network',
-  ARIA_FILTER_ALL_ANALYTICS: 'All Analytics',
+  ARIA_FILTER_EVERY_API: 'Every api',
 } as const;
 
 export const getAutoDetailsFocusLabel = (isOn: boolean) =>
