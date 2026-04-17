@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback, useMemo, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import classNames from 'classnames';
 import _isFunction from 'lodash/isFunction';
 
@@ -73,17 +74,10 @@ const DebugScroll = ({
   needsScrolling,
 }: Props) => {
   const backClicked = useOnScreenDebuggerStore(s => s.debuggerScrollBackNonce);
-  const setDebuggerScrollIsScrolled = useOnScreenDebuggerStore(
-    s => s.setDebuggerScrollIsScrolled,
-  );
-  const focusedId =
-    useOnScreenDebuggerStore(s => s.focusedScrollIds[id]) || firstItem;
-  const setFocusedScrollId = useOnScreenDebuggerStore(
-    s => s.setFocusedScrollId,
-  );
-  const clearFocusedScrollState = useOnScreenDebuggerStore(
-    s => s.clearFocusedScrollState,
-  );
+  const setDebuggerScrollIsScrolled = useOnScreenDebuggerStore(s => s.setDebuggerScrollIsScrolled);
+  const focusedId = useOnScreenDebuggerStore(s => s.focusedScrollIds[id]) || firstItem;
+  const setFocusedScrollId = useOnScreenDebuggerStore(s => s.setFocusedScrollId);
+  const clearFocusedScrollState = useOnScreenDebuggerStore(s => s.clearFocusedScrollState);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewPortRef = useRef<HTMLDivElement>(null);
@@ -110,10 +104,7 @@ const DebugScroll = ({
   }).current;
 
   const getNewAxis = useCallback(
-    (
-      elementId: string,
-      childrenMetadata: Record<string, ScrollItemMetadata> | null,
-    ) => {
+    (elementId: string, childrenMetadata: Record<string, ScrollItemMetadata> | null) => {
       if (!elementId) {
         return 0;
       }
@@ -138,13 +129,10 @@ const DebugScroll = ({
         const top = element.offsetTop;
         const elementHeight = element.offsetHeight;
         const { currentAxis } = refs;
-        const relativeElementTop =
-          toVw(top, getResolution().width) + currentAxis;
-        const elementBottom =
-          relativeElementTop + toVw(elementHeight, getResolution().width);
+        const relativeElementTop = toVw(top, getResolution().width) + currentAxis;
+        const elementBottom = relativeElementTop + toVw(elementHeight, getResolution().width);
         const isElementFullyVisible =
-          relativeElementTop > 0 &&
-          elementBottom + metadataHeight < latest.current.height;
+          relativeElementTop > 0 && elementBottom + metadataHeight < latest.current.height;
         const hasNextSibling = getHasNextSibling
           ? getHasNextSibling(element)
           : !!element.nextElementSibling;
@@ -157,18 +145,14 @@ const DebugScroll = ({
           return refs.currentAxis;
         }
 
-        if (
-          (forceScroll || hasNextSibling) &&
-          element.dataset.scrollFull === 'true'
-        ) {
+        if ((forceScroll || hasNextSibling) && element.dataset.scrollFull === 'true') {
           return getLimitedValue({
             max: minScrollValue,
             n: -toVw(top, getResolution().width) + latest.current.extraPush,
           });
         }
 
-        const pushNeeded =
-          elementBottom + latest.current.extraPush - latest.current.height;
+        const pushNeeded = elementBottom + latest.current.extraPush - latest.current.height;
         const newAxis = currentAxis - pushNeeded;
 
         return getLimitedValue({
@@ -193,13 +177,9 @@ const DebugScroll = ({
       const relativeElementTop = top + currentAxis;
       const elementBottom = relativeElementTop + elementHeight;
       const pushNeeded =
-        elementBottom +
-        latest.current.extraPush +
-        metadataHeight -
-        latest.current.height;
+        elementBottom + latest.current.extraPush + metadataHeight - latest.current.height;
       const newAxis = currentAxis - pushNeeded;
-      const isElementFullyVisible =
-        elementBottom + metadataHeight < latest.current.height;
+      const isElementFullyVisible = elementBottom + metadataHeight < latest.current.height;
       const hasNextSibling = !!elementMetadata.next;
 
       if (!forceScroll && isElementFullyVisible && !hasNextSibling) {
@@ -219,7 +199,7 @@ const DebugScroll = ({
         n: newAxis,
       });
     },
-    [getHasNextSibling],
+    [getHasNextSibling]
   );
 
   const totalScrollItems = useDOM ? [] : getScrollItems(children);
@@ -239,7 +219,7 @@ const DebugScroll = ({
     refs.maxScroll = getMaxScroll(
       childrenData.totalSize,
       latest.current.extraPush,
-      getResolution().heightVw,
+      getResolution().heightVw
     );
 
     const { hasAxisBeenRestored, focusToRestore } = refs;
@@ -253,12 +233,11 @@ const DebugScroll = ({
       refs.maxScroll = getMaxScroll(
         childrenData.totalSize,
         latest.current.extraPush,
-        toVw(getResolution().height),
+        toVw(getResolution().height)
       );
     }
 
-    const { subset, itemsMetadata, compensation, compensationArray } =
-      childrenData;
+    const { subset, itemsMetadata, compensation, compensationArray } = childrenData;
 
     refs.topCompensation = compensation;
     refs.compensationArray = compensationArray;
@@ -276,14 +255,11 @@ const DebugScroll = ({
     setFocusedScrollId({ id, focusedId: '', isFirstFocus: false });
   }, [backClicked]);
 
-  const onTransitionEnd = useCallback(
-    (e: React.TransitionEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget && scrollRef.current) {
-        navigationEnabler.toggleNavigation(true);
-      }
-    },
-    [],
-  );
+  const onTransitionEnd = useCallback((e: React.TransitionEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget && scrollRef.current) {
+      navigationEnabler.toggleNavigation(true);
+    }
+  }, []);
 
   useEffect(() => {
     refs.currentAxis = getNewAxis(focusedId, refs.childrenMetadata);
@@ -314,10 +290,7 @@ const DebugScroll = ({
     }
 
     if (scrollElement) {
-      const parsedTransform = (scrollElement.style.transform ?? '').replace(
-        /[^\d.]/g,
-        '',
-      );
+      const parsedTransform = (scrollElement.style.transform ?? '').replace(/[^\d.]/g, '');
       const currentTransform = Math.round(parseFloat(parsedTransform));
       const roundedAbsAxis = Math.abs(Math.round(refs.currentAxis));
 

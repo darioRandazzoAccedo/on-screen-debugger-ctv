@@ -11,10 +11,7 @@ import {
   type LogEntry,
   type DebugModalVisibility,
 } from './store/onScreenDebuggerStore';
-import {
-  getLabelForSequence,
-  SEQUENCE_ENABLE_DISABLE_DEBUG_UI,
-} from './hooks/useOnScreenDebugger';
+import { getLabelForSequence, SEQUENCE_ENABLE_DISABLE_DEBUG_UI } from './hooks/useOnScreenDebugger';
 import useToggleDebugModal from './hooks/useToggleDebugModal';
 import useUpdateScroll from './hooks/useUpdateScroll';
 import FocusDiv from './components/DebugFocusDiv/DebugFocusDiv';
@@ -59,34 +56,24 @@ const OnScreenDebugger = () => {
     all_analytics: 0,
   });
   const [autoRefreshFlag, setAutoRefreshFlag] = useState<boolean>(true);
-  const [autoFocusToNewEntry, setAutoFocusToNewEntry] =
-    useState<boolean>(false);
+  const [autoFocusToNewEntry, setAutoFocusToNewEntry] = useState<boolean>(false);
   const autoFocusToNewEntryRef = useLatest(autoFocusToNewEntry);
   const [debuggerFilter, setDebuggerFilter] =
     useState<OnScreenDebuggerFilterOptions>('all_terminal');
-  const [focusingOnDebugEntry, setFocusingOnDebugEntry] =
-    useState<boolean>(false);
-  const [selectedDebugEntryDetails, setSelectedDebugEntryDetails] =
-    useState<LogEntry | null>(null);
+  const [focusingOnDebugEntry, setFocusingOnDebugEntry] = useState<boolean>(false);
+  const [selectedDebugEntryDetails, setSelectedDebugEntryDetails] = useState<LogEntry | null>(null);
   const [focusDetailsMode, setFocusDetailsMode] = useState<boolean>(false);
   const focusDetailsModeRef = useLatest(focusDetailsMode);
-  const [isDataDetailsSuperExpanded, setIsDataDetailsSuperExpanded] =
-    useState<boolean>(false);
+  const [isDataDetailsSuperExpanded, setIsDataDetailsSuperExpanded] = useState<boolean>(false);
   const isDataDetailsSuperExpandedRef = useLatest(isDataDetailsSuperExpanded);
-  const [lastFocusBeforeDetails, setLastFocusBeforeDetails] =
-    useState<string>('');
+  const [lastFocusBeforeDetails, setLastFocusBeforeDetails] = useState<string>('');
   const dataDetailsRef = useRef<HTMLDivElement>(null);
   const lastFocusBeforeDetailsRef = useLatest(lastFocusBeforeDetails);
-  const prevDebuggerFilterRef =
-    useRef<OnScreenDebuggerFilterOptions>('all_terminal');
+  const prevDebuggerFilterRef = useRef<OnScreenDebuggerFilterOptions>('all_terminal');
   const prevEntryCountRef = useRef<number>(0);
-  const debuggerModalVisibility = useOnScreenDebuggerStore(
-    s => s.debugModalVisibility,
-  );
+  const debuggerModalVisibility = useOnScreenDebuggerStore(s => s.debugModalVisibility);
   const debuggerModalVisibilityRef = useLatest(debuggerModalVisibility);
-  const quickKeySequenceEnabled = useOnScreenDebuggerStore(
-    s => s.quickKeySequence,
-  );
+  const quickKeySequenceEnabled = useOnScreenDebuggerStore(s => s.quickKeySequence);
   const lastChangeTime = useOnScreenDebuggerStore(s => s.lastChangeTime);
   const { toggleDebugModal } = useToggleDebugModal();
   const logs = useOnScreenDebuggerStore(s => s.log);
@@ -101,19 +88,16 @@ const OnScreenDebugger = () => {
   const recordInfo = useOnScreenDebuggerStore(s => s.recordInfo);
   const recordWarn = useOnScreenDebuggerStore(s => s.recordWarn);
   const recordError = useOnScreenDebuggerStore(s => s.recordError);
-  const recordNetworkTraffic = useOnScreenDebuggerStore(
-    s => s.recordNetworkTraffic,
-  );
+  const recordNetworkTraffic = useOnScreenDebuggerStore(s => s.recordNetworkTraffic);
 
-  const recordingFlags: Record<RecordingButtonConfig['selectorKey'], boolean> =
-    {
-      recordLog,
-      recordDebug,
-      recordInfo,
-      recordWarn,
-      recordError,
-      recordNetworkTraffic,
-    };
+  const recordingFlags: Record<RecordingButtonConfig['selectorKey'], boolean> = {
+    recordLog,
+    recordDebug,
+    recordInfo,
+    recordWarn,
+    recordError,
+    recordNetworkTraffic,
+  };
 
   const lastFocusRef = useRef('');
   const updateScroll = useUpdateScroll(ENTRIES_SCROLL_ID);
@@ -121,9 +105,9 @@ const OnScreenDebugger = () => {
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const lastEntryRef = useRef<LogEntry | null>(null);
 
-  const sequenceLabel = SEQUENCE_ENABLE_DISABLE_DEBUG_UI.map(k =>
-    getLabelForSequence(k.id),
-  ).join(' ');
+  const sequenceLabel = SEQUENCE_ENABLE_DISABLE_DEBUG_UI.map(k => getLabelForSequence(k.id)).join(
+    ' '
+  );
 
   const changeFocusWrap = useCallback((value: string) => {
     if (debuggerModalVisibilityRef.current === 'focusable') {
@@ -132,9 +116,9 @@ const OnScreenDebugger = () => {
       return;
     }
 
-    (window.console as any)?.warn(
+    window.console?.warn?.(
       'OnScreenDebugger - trying to set focus when not focusable or hidden ',
-      value,
+      value
     );
   }, []);
 
@@ -184,10 +168,7 @@ const OnScreenDebugger = () => {
       case 'sas':
       case 'logstash':
       case 'all_analytics': {
-        entriesToUpdate = filterNetworkTrafficByUrl(
-          networkTraffic,
-          debuggerFilter,
-        );
+        entriesToUpdate = filterNetworkTrafficByUrl(networkTraffic, debuggerFilter);
         break;
       }
 
@@ -214,24 +195,17 @@ const OnScreenDebugger = () => {
       prevEntryCountRef.current = currentCount;
 
       if (autoFocusToNewEntryRef.current && !focusDetailsModeRef.current) {
-        const isFocusingOnDebugEntry = focusManager
-          .getCurrentFocus()
-          .includes('DEBUG_ENTRY_');
+        const isFocusingOnDebugEntry = focusManager.getCurrentFocus().includes('DEBUG_ENTRY_');
 
         if (!isFocusingOnDebugEntry) {
-          setSelectedDebugEntryDetails(
-            entriesToUpdate?.[entriesToUpdate.length - 1] ?? null,
-          );
+          setSelectedDebugEntryDetails(entriesToUpdate?.[entriesToUpdate.length - 1] ?? null);
           window.setTimeout(() => {
-            updateScroll(
-              entriesToUpdate?.[entriesToUpdate.length - 1]?.id ?? '',
-            );
+            updateScroll(entriesToUpdate?.[entriesToUpdate.length - 1]?.id ?? '');
           }, 100);
         }
       }
 
-      lastEntryRef.current =
-        entriesToUpdate?.[entriesToUpdate.length - 1] ?? null;
+      lastEntryRef.current = entriesToUpdate?.[entriesToUpdate.length - 1] ?? null;
       window.requestAnimationFrame(() => {
         setEntries(entriesToUpdate);
       });
@@ -250,14 +224,12 @@ const OnScreenDebugger = () => {
       errors: errors.length,
       all_terminal: allTerminal.length,
       fetch_xhr: filterNetworkTraffic(networkTraffic, 'fetch_xhr').length,
-      other_network: filterNetworkTraffic(networkTraffic, 'other_network')
-        .length,
+      other_network: filterNetworkTraffic(networkTraffic, 'other_network').length,
       all_network: networkTraffic.length,
       dal: filterNetworkTrafficByUrl(networkTraffic, 'dal').length,
       sas: filterNetworkTrafficByUrl(networkTraffic, 'sas').length,
       logstash: filterNetworkTrafficByUrl(networkTraffic, 'logstash').length,
-      all_analytics: filterNetworkTrafficByUrl(networkTraffic, 'all_analytics')
-        .length,
+      all_analytics: filterNetworkTrafficByUrl(networkTraffic, 'all_analytics').length,
     };
   });
 
@@ -290,19 +262,14 @@ const OnScreenDebugger = () => {
       (autoFocusToNewEntry && debuggerModalVisibility === 'not-focusable') ||
       lastFocusBeforeDetails !== ''
     );
-  }, [
-    focusingOnDebugEntry,
-    autoFocusToNewEntry,
-    debuggerModalVisibility,
-    lastFocusBeforeDetails,
-  ]);
+  }, [focusingOnDebugEntry, autoFocusToNewEntry, debuggerModalVisibility, lastFocusBeforeDetails]);
 
   const restoreFocusToMainApp = useCallback(
     (nextModalVisibility: DebugModalVisibility) => {
       changeFocusWrap(lastFocusRef.current);
       toggleDebugModal(nextModalVisibility);
     },
-    [changeFocusWrap, toggleDebugModal],
+    [changeFocusWrap, toggleDebugModal]
   );
 
   const handleFocusMainApp = useCallback(() => {
@@ -321,9 +288,7 @@ const OnScreenDebugger = () => {
     window.requestAnimationFrame(() => {
       restoreFocusToMainApp('hidden');
       window.requestAnimationFrame(() => {
-        useOnScreenDebuggerStore
-          .getState()
-          .setOnScreenDebuggerEnabledPersistent('off');
+        useOnScreenDebuggerStore.getState().setOnScreenDebuggerEnabledPersistent('off');
       });
     });
   }, [restoreFocusToMainApp]);
@@ -369,20 +334,16 @@ const OnScreenDebugger = () => {
     const currentFocus = focusManager.getCurrentFocus();
     const isFocusOnDebugEntry = currentFocus.includes('DEBUG_ENTRY_');
     const isFocusOnReturnToMainAppButton = currentFocus.includes(
-      DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON,
+      DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON
     );
 
-    if (
-      !isFocusOnDebugEntry &&
-      currentFocus !== DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON
-    ) {
+    if (!isFocusOnDebugEntry && currentFocus !== DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON) {
       changeFocusWrap(DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON);
 
       return;
     }
 
-    const validLastFocusBeforeDetails =
-      lastFocusBeforeDetailsRef.current !== '';
+    const validLastFocusBeforeDetails = lastFocusBeforeDetailsRef.current !== '';
 
     if (isFocusOnReturnToMainAppButton) {
       handleFocusMainApp();
@@ -476,12 +437,11 @@ const OnScreenDebugger = () => {
     focusManager.changeFocus(
       autoFocusToNewEntryRef.current && lastEntryRef.current?.id
         ? lastEntryRef.current?.id
-        : DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON,
+        : DEBUG_UI_MODAL.FOCUS_MAIN_APP_BUTTON
     );
   }, [debuggerModalVisibility, lastChangeTime]);
 
-  return debuggerModalVisibility === 'focusable' ||
-    debuggerModalVisibility === 'not-focusable' ? (
+  return debuggerModalVisibility === 'focusable' || debuggerModalVisibility === 'not-focusable' ? (
     <FocusDiv nav={nav.MODAL_CONTAINER} className={styles.modal}>
       <div className={styles.modalContent}>
         <div className={styles.modalAdminUi}>
@@ -492,9 +452,7 @@ const OnScreenDebugger = () => {
             handleCloseDebugModal={handleCloseDebugModal}
             handleDisableDebugModal={handleDisableDebugModal}
             autoFocusToNewEntry={autoFocusToNewEntry}
-            onToggleAutoFocus={() =>
-              setAutoFocusToNewEntry(!autoFocusToNewEntry)
-            }
+            onToggleAutoFocus={() => setAutoFocusToNewEntry(!autoFocusToNewEntry)}
             autoRefreshFlag={autoRefreshFlag}
             onToggleAutoRefresh={() => setAutoRefreshFlag(!autoRefreshFlag)}
             quickKeySequenceEnabled={quickKeySequenceEnabled}
@@ -537,15 +495,11 @@ const OnScreenDebugger = () => {
                 />
                 {renderContentDataDetails && (
                   <div
-                    className={classNames(
-                      styles.modalDebugModeContentDataDetails,
-                      {
-                        [styles.modalDebugModeContentDataDetailsFocused]:
-                          focusDetailsMode,
-                        [styles.modalDebugModeContentDataDetailsSuperExpanded]:
-                          isDataDetailsSuperExpanded,
-                      },
-                    )}
+                    className={classNames(styles.modalDebugModeContentDataDetails, {
+                      [styles.modalDebugModeContentDataDetailsFocused]: focusDetailsMode,
+                      [styles.modalDebugModeContentDataDetailsSuperExpanded]:
+                        isDataDetailsSuperExpanded,
+                    })}
                     ref={dataDetailsRef}
                   >
                     <OnScreenDebuggerEntryDetails
@@ -562,7 +516,7 @@ const OnScreenDebugger = () => {
                     focusDetailsMode,
                     isDataDetailsSuperExpanded,
                     sequenceLabel,
-                    quickKeySequenceEnabled,
+                    quickKeySequenceEnabled
                   )}
                 </div>
               </div>

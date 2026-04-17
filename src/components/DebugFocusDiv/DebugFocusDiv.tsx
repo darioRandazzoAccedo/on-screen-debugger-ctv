@@ -1,14 +1,15 @@
+import type { CSSProperties, ReactNode, Ref } from 'react';
 import type { Node } from '../../lrud/interfaces';
 
 import { useFocus } from '../../navigation';
 
 type Props = {
   nav: EnhancedXDKNav;
-  domRef?: any;
+  domRef?: Ref<HTMLDivElement>;
   noId?: boolean;
   className?: string;
-  style?: React.CSSProperties;
-  children?: React.ReactNode | string;
+  style?: CSSProperties;
+  children?: ReactNode | string;
   onMouseOver?: () => void;
   onMouseOut?: () => void;
   onClick?: () => void;

@@ -1,13 +1,9 @@
-import React, { useEffect, useCallback, useMemo, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import classNames from 'classnames';
 import _isFunction from 'lodash/isFunction';
 
-import {
-  getResolution,
-  navigationEnabler,
-  toVw,
-  getLimitedValue,
-} from '../../utils';
+import { getResolution, navigationEnabler, toVw, getLimitedValue } from '../../utils';
 import { useLatest, useUpdateEffect } from '../../hooks';
 import { useOnScreenDebuggerStore } from '../../store/onScreenDebuggerStore';
 
@@ -62,17 +58,10 @@ const DebugDOMScroll = ({
   noTransition = false,
 }: Props) => {
   const backClicked = useOnScreenDebuggerStore(s => s.debuggerScrollBackNonce);
-  const setDebuggerScrollIsScrolled = useOnScreenDebuggerStore(
-    s => s.setDebuggerScrollIsScrolled,
-  );
-  const focusedId =
-    useOnScreenDebuggerStore(s => s.focusedScrollIds[id]) || fallbackId;
-  const setFocusedScrollId = useOnScreenDebuggerStore(
-    s => s.setFocusedScrollId,
-  );
-  const clearFocusedScrollState = useOnScreenDebuggerStore(
-    s => s.clearFocusedScrollState,
-  );
+  const setDebuggerScrollIsScrolled = useOnScreenDebuggerStore(s => s.setDebuggerScrollIsScrolled);
+  const focusedId = useOnScreenDebuggerStore(s => s.focusedScrollIds[id]) || fallbackId;
+  const setFocusedScrollId = useOnScreenDebuggerStore(s => s.setFocusedScrollId);
+  const clearFocusedScrollState = useOnScreenDebuggerStore(s => s.clearFocusedScrollState);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const viewPortRef = useRef<HTMLDivElement>(null);
@@ -122,11 +111,9 @@ const DebugDOMScroll = ({
       const elementHeight = elementPosition.offsetHeight;
       const { currentAxis } = refs;
       const relativeElementTop = toVw(top, screenWidth) + currentAxis;
-      const elementBottom =
-        relativeElementTop + toVw(elementHeight, screenWidth);
+      const elementBottom = relativeElementTop + toVw(elementHeight, screenWidth);
       const isElementFullyVisible =
-        relativeElementTop > 0 &&
-        elementBottom + metadataHeight < latest.current.height;
+        relativeElementTop > 0 && elementBottom + metadataHeight < latest.current.height;
       const hasNextSibling = getHasNextSibling
         ? getHasNextSibling(element)
         : elementPosition.hasNextSibling;
@@ -135,24 +122,16 @@ const DebugDOMScroll = ({
         return refs.currentAxis;
       }
 
-      if (
-        (forceScroll || hasNextSibling) &&
-        element.dataset.scrollFull === 'true'
-      ) {
+      if ((forceScroll || hasNextSibling) && element.dataset.scrollFull === 'true') {
         return getLimitedValue({
           max: minScrollValue,
           n: -toVw(top, screenWidth) + latest.current.extraPush,
         });
       }
 
-      const elementExtraPush = Number.parseFloat(
-        element.dataset.extraPush || '0',
-      );
+      const elementExtraPush = Number.parseFloat(element.dataset.extraPush || '0');
       const pushNeeded =
-        elementBottom +
-        latest.current.extraPush +
-        elementExtraPush -
-        latest.current.height;
+        elementBottom + latest.current.extraPush + elementExtraPush - latest.current.height;
       const newAxis = currentAxis - pushNeeded;
 
       return getLimitedValue({
@@ -160,7 +139,7 @@ const DebugDOMScroll = ({
         n: newAxis,
       });
     },
-    [getHasNextSibling],
+    [getHasNextSibling]
   );
 
   useUpdateEffect(() => {
@@ -171,14 +150,11 @@ const DebugDOMScroll = ({
     setFocusedScrollId({ id, focusedId: '', isFirstFocus: false });
   }, [backClicked]);
 
-  const onTransitionEnd = useCallback(
-    (e: React.TransitionEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget && scrollRef.current) {
-        navigationEnabler.toggleNavigation(true);
-      }
-    },
-    [],
-  );
+  const onTransitionEnd = useCallback((e: React.TransitionEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget && scrollRef.current) {
+      navigationEnabler.toggleNavigation(true);
+    }
+  }, []);
 
   useEffect(() => {
     const isScrolled = refs.currentAxis < 0;
@@ -207,11 +183,7 @@ const DebugDOMScroll = ({
     refs.firstFocusedId = focusedId;
   }
 
-  if (
-    !noTransition &&
-    refs.firstFocusedId &&
-    refs.firstFocusedId !== focusedId
-  ) {
+  if (!noTransition && refs.firstFocusedId && refs.firstFocusedId !== focusedId) {
     refs.enableTransition = true;
   }
 

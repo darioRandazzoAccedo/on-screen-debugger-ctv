@@ -63,6 +63,21 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'import/no-extraneous-dependencies': 'off',
+        'import/no-unresolved': 'off',
+      },
+    },
+    {
+      // Debugger / navigation instrumentation — console is intentional
+      files: [
+        'src/hooks/useOnScreenDebugger.ts',
+        'src/navigation/**/*.ts',
+        'src/storage.ts',
+        'src/store/onScreenDebuggerStore.ts',
+      ],
+      rules: {
+        'no-console': 'off',
       },
     },
   ],
