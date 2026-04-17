@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
-import { Direction, Directions } from './interfaces';
+import type { Direction } from './interfaces';
+import { Directions } from './interfaces';
 
 export const KeyCodes: { [keyCode: number]: Direction } = {
   4: Directions.LEFT,

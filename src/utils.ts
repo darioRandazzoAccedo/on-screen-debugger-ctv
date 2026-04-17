@@ -1,4 +1,5 @@
-import React, { Children, Fragment } from 'react';
+import type React from 'react';
+import { Children, Fragment } from 'react';
 
 // ----- merged from src/utils/lazyUtils.ts -----
 export type ItemMetadata = {
@@ -25,11 +26,7 @@ type GetMetadataArgs<ItemType, Extra> = {
   getItemId: (item: ItemType, index: number) => string;
   getItemSize: (item: ItemType, index: number) => number;
   getItemMeta?: (item: ItemType) => any;
-  setSubsetItem?: (
-    item: ItemType,
-    id: string,
-    index: number,
-  ) => ItemType & Extra;
+  setSubsetItem?: (item: ItemType, id: string, index: number) => ItemType & Extra;
 };
 
 type GetMetadataReturn<Extra> = {
@@ -40,19 +37,11 @@ type GetMetadataReturn<Extra> = {
   subset: any[];
 };
 
-export function getLimitedValue({
-  min = -Infinity,
-  max = Infinity,
-  n = 0,
-}: GetLimitedValueArgs) {
+export function getLimitedValue({ min = -Infinity, max = Infinity, n = 0 }: GetLimitedValueArgs) {
   return Math.min(Math.max(n, min), max);
 }
 
-export function getMaxScroll(
-  stackedHeight: number,
-  extraPush: number,
-  containerSize: number,
-) {
+export function getMaxScroll(stackedHeight: number, extraPush: number, containerSize: number) {
   return -Math.abs(stackedHeight - containerSize + extraPush);
 }
 
@@ -77,7 +66,7 @@ function isItemVisible({
   );
 }
 
-function getMetadata<Extra = {}, ItemType = any>({
+function getMetadata<Extra = unknown, ItemType = unknown>({
   items,
   axis,
   offset = 0,
@@ -109,9 +98,7 @@ function getMetadata<Extra = {}, ItemType = any>({
       itemEnd: relativeItemDistance,
     });
     const prevItemMetadata: any = itemsMetadata[prevItemId];
-    const isPreviousItemVisible = !!(
-      prevItemMetadata && prevItemMetadata.isVisible
-    );
+    const isPreviousItemVisible = !!(prevItemMetadata && prevItemMetadata.isVisible);
     const shouldRender = isVisible || isPreviousItemVisible;
     const itemMetadata = {
       index,
@@ -136,11 +123,7 @@ function getMetadata<Extra = {}, ItemType = any>({
       if (isVisible && !prevItemMetadata.shouldRender) {
         prevItemMetadata.shouldRender = true;
 
-        subset.push(
-          setSubsetItem
-            ? setSubsetItem(prevItem, prevItemId, index - 1)
-            : prevItem,
-        );
+        subset.push(setSubsetItem ? setSubsetItem(prevItem, prevItemId, index - 1) : prevItem);
 
         hasAnyItemRender = true;
 
@@ -271,7 +254,7 @@ function getScrollChildItemId(child: any) {
 
   if (!childId) {
     throw new Error(
-      'Scroll.tsx: Child id not found. All Scroll children must have a nav prop with an id',
+      'Scroll.tsx: Child id not found. All Scroll children must have a nav prop with an id'
     );
   }
 
@@ -283,7 +266,7 @@ function getScrollChildItemSize(child: any) {
 
   if (!getChildHeight) {
     throw new Error(
-      "Scroll.tsx: getHeight not found. All Scroll children's component must have a static getHeight function",
+      "Scroll.tsx: getHeight not found. All Scroll children's component must have a static getHeight function"
     );
   }
 
@@ -316,15 +299,13 @@ function getScrollChildItemMeta(item: any) {
 export function getScrollItems(children: React.ReactNode) {
   const flatArray = flattenChildren(children);
 
-  return (flatArray as UnknownChild[]).filter(
-    ({ props }) => props['data-scroll-item'],
-  );
+  return (flatArray as UnknownChild[]).filter(({ props }) => props['data-scroll-item']);
 }
 
 export function getChildrenMetadata(
   children: React.ReactNode,
   axis: number,
-  containerHeight: number,
+  containerHeight: number
 ) {
   const scrollItems = getScrollItems(children);
 
@@ -338,10 +319,7 @@ export function getChildrenMetadata(
   });
 }
 
-export function filterChildren(
-  children: React.ReactNode,
-  subset: any[] | null,
-): any {
+export function filterChildren(children: React.ReactNode, subset: any[] | null): any {
   const activeChildren: any[] = [];
   const childrenArray = Children.toArray(children);
 
@@ -397,9 +375,7 @@ export const getCallSiteInfo = (framesToSkip = 3): CallSiteInfo => {
   const callerLine = lines[framesToSkip] || '';
 
   // Chrome/V8 format: "    at functionName (file:line:col)" or "    at file:line:col"
-  const chromeMatch = /at\s+(?:([^(]+?)\s+\()?(.+):(\d+):(\d+)\)?/.exec(
-    callerLine,
-  );
+  const chromeMatch = /at\s+(?:([^(]+?)\s+\()?(.+):(\d+):(\d+)\)?/.exec(callerLine);
 
   // Firefox/Safari format: "functionName@file:line:col"
   const firefoxMatch = /^([^@]*)@(.+):(\d+):(\d+)$/.exec(callerLine);
@@ -433,21 +409,14 @@ export const getCallSiteInfo = (framesToSkip = 3): CallSiteInfo => {
   };
 };
 
-const isSerializable = (
-  value: unknown,
-  seen: WeakSet<object> = new WeakSet(),
-): boolean => {
+const isSerializable = (value: unknown, seen: WeakSet<object> = new WeakSet()): boolean => {
   if (value === null) {
     return true;
   }
 
   const valueType = typeof value;
 
-  if (
-    valueType === 'string' ||
-    valueType === 'number' ||
-    valueType === 'boolean'
-  ) {
+  if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') {
     return true;
   }
 
@@ -496,11 +465,7 @@ const stringifyParam = (value: unknown): string => {
     return value;
   }
 
-  if (
-    typeof value === 'number' ||
-    typeof value === 'boolean' ||
-    typeof value === 'bigint'
-  ) {
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
     return String(value);
   }
 
@@ -587,7 +552,7 @@ const processChar = (
   char: string,
   state: ParserState,
   index: number,
-  closingChar: '}' | ']',
+  closingChar: '}' | ']'
 ): ParserState => {
   if (state.foundAt !== -1) {
     return state;
@@ -629,11 +594,7 @@ const processChar = (
 /**
  * Finds the matching closing bracket/brace, handling nested structures and strings.
  */
-const findMatchingClose = (
-  input: string,
-  start: number,
-  closingChar: '}' | ']',
-): number => {
+const findMatchingClose = (input: string, start: number, closingChar: '}' | ']'): number => {
   const initialState: ParserState = {
     depth: 0,
     inString: false,
@@ -644,7 +605,7 @@ const findMatchingClose = (
   const chars = input.slice(start).split('');
   const finalState = chars.reduce<ParserState>(
     (state, char, idx) => processChar(char, state, start + idx, closingChar),
-    initialState,
+    initialState
   );
 
   return finalState.foundAt;
@@ -659,10 +620,7 @@ const mergeTextSegments = (segments: ExtractedSegment[]): ExtractedSegment[] =>
       const last = merged[merged.length - 1];
 
       if (segment.type === 'text' && last?.type === 'text') {
-        return [
-          ...merged.slice(0, -1),
-          { type: 'text', value: last.value + segment.value },
-        ];
+        return [...merged.slice(0, -1), { type: 'text', value: last.value + segment.value }];
       }
 
       return [...merged, segment];
@@ -682,7 +640,7 @@ const processExtractionStep = (
   input: string,
   state: ExtractionState,
   prettyPrint: boolean,
-  indentSpaces: number,
+  indentSpaces: number
 ): ExtractionState => {
   if (state.done || state.currentIndex >= input.length) {
     return { ...state, done: true };
@@ -720,9 +678,7 @@ const processExtractionStep = (
   const jsonStart = getJsonStart();
 
   const closingChar: '}' | ']' =
-    nextBrace !== -1 && (nextBracket === -1 || nextBrace < nextBracket)
-      ? '}'
-      : ']';
+    nextBrace !== -1 && (nextBracket === -1 || nextBrace < nextBracket) ? '}' : ']';
 
   // Add text before JSON if any
   const textBefore =
@@ -740,11 +696,7 @@ const processExtractionStep = (
   // No valid closing found
   if (jsonEnd === -1) {
     return {
-      segments: [
-        ...state.segments,
-        ...textBefore,
-        { type: 'text', value: input.slice(jsonStart) },
-      ],
+      segments: [...state.segments, ...textBefore, { type: 'text', value: input.slice(jsonStart) }],
       currentIndex: input.length,
       done: true,
     };
@@ -754,27 +706,17 @@ const processExtractionStep = (
 
   try {
     const parsed = JSON.parse(jsonString);
-    const formattedValue = prettyPrint
-      ? JSON.stringify(parsed, null, indentSpaces)
-      : jsonString;
+    const formattedValue = prettyPrint ? JSON.stringify(parsed, null, indentSpaces) : jsonString;
 
     return {
-      segments: [
-        ...state.segments,
-        ...textBefore,
-        { type: 'json', value: formattedValue, parsed },
-      ],
+      segments: [...state.segments, ...textBefore, { type: 'json', value: formattedValue, parsed }],
       currentIndex: jsonEnd + 1,
       done: false,
     };
   } catch {
     // Not valid JSON, treat opening char as text and continue
     return {
-      segments: [
-        ...state.segments,
-        ...textBefore,
-        { type: 'text', value: input[jsonStart] },
-      ],
+      segments: [...state.segments, ...textBefore, { type: 'text', value: input[jsonStart] }],
       currentIndex: jsonStart + 1,
       done: false,
     };
@@ -788,14 +730,9 @@ const extractRecursive = (
   input: string,
   state: ExtractionState,
   prettyPrint: boolean,
-  indentSpaces: number,
+  indentSpaces: number
 ): ExtractedSegment[] => {
-  const nextState = processExtractionStep(
-    input,
-    state,
-    prettyPrint,
-    indentSpaces,
-  );
+  const nextState = processExtractionStep(input, state, prettyPrint, indentSpaces);
 
   if (nextState.done) {
     return mergeTextSegments(nextState.segments);
@@ -814,7 +751,7 @@ const extractRecursive = (
  */
 export const extractJsonFromString = (
   input: string,
-  options: ExtractJsonOptions = {},
+  options: ExtractJsonOptions = {}
 ): ExtractedSegment[] => {
   const { prettyPrint = false, indentSpaces = 2 } = options;
   const initialState: ExtractionState = {
@@ -834,10 +771,7 @@ export const extractJsonFromString = (
  * @param indentSpaces - Number of spaces for indentation (default: 2)
  * @returns The formatted string with pretty-printed JSON
  */
-export const formatStringWithJson = (
-  input: string,
-  indentSpaces = 2,
-): string => {
+export const formatStringWithJson = (input: string, indentSpaces = 2): string => {
   const segments = extractJsonFromString(input, {
     prettyPrint: true,
     indentSpaces,
@@ -856,10 +790,7 @@ export const parseResponseBody = async (response: Response): Promise<any> => {
       return await cloned.json();
     }
 
-    if (
-      contentType.includes('text/') ||
-      contentType.includes('application/xml')
-    ) {
+    if (contentType.includes('text/') || contentType.includes('application/xml')) {
       return await cloned.text();
     }
   } catch {
