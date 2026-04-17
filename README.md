@@ -51,7 +51,7 @@ npm install @accedo/onscreen-debugger
 
 ---
 
-## Usage
+## Usage 1 (data and UI)
 
 ### 1. Set up the hook at the root of your app
 
@@ -114,6 +114,46 @@ import {
 ```
 
 ---
+
+## Usage 2 (just data)
+
+If you build **your own UI** for captured data instead of (or in addition to) `<OnScreenDebugger />`, your data components can import **`useOnScreenDebuggerStore` only**—they do not need `useOnScreenDebugger`. Subscribe with Zustand selectors for the same slices the modal uses (`log`, `debug`, `info`, `warn`, `error`, `networkTraffic`, plus any other fields on the store you need).
+
+Interceptors still have to be installed once for the store to fill: call **`useOnScreenDebugger()` a single time** near the root (see Usage 1). This package does not expose a separate installer; skip mounting `<OnScreenDebugger />` only when your UI fully replaces it.
+
+```tsx
+// App (or another top-level module): install capture — once
+import { useOnScreenDebugger } from '@accedo/onscreen-debugger';
+
+const App = () => {
+  useOnScreenDebugger();
+  return (
+    <>
+      <YourApp />
+      <MyCustomDebugPanel />
+    </>
+  );
+};
+```
+
+```tsx
+// MyCustomDebugPanel.tsx — data only, no useOnScreenDebugger import
+import { useOnScreenDebuggerStore } from '@accedo/onscreen-debugger';
+
+const MyCustomDebugPanel = () => {
+  const logs = useOnScreenDebuggerStore(s => s.log);
+  const debugs = useOnScreenDebuggerStore(s => s.debug);
+  const infos = useOnScreenDebuggerStore(s => s.info);
+  const warns = useOnScreenDebuggerStore(s => s.warn);
+  const errors = useOnScreenDebuggerStore(s => s.error);
+  const networkTraffic = useOnScreenDebuggerStore(s => s.networkTraffic);
+
+  // Render logs, debugs, infos, warns, errors, networkTraffic (LogEntry[] / your types) as you like
+  return null;
+};
+```
+
+Outside React (e.g. logging, tests, or non-UI modules), read the latest snapshot with `useOnScreenDebuggerStore.getState()` and the same property names (`log`, `debug`, `info`, `warn`, `error`, `networkTraffic`, recording flags, etc.). See the store-backed helpers in the [API Reference](#api-reference) for other reactive accessors.
 
 ## API Reference
 
