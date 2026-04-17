@@ -10,8 +10,7 @@ const setRecordDebug = (v: boolean) => osd().setRecordDebug(v);
 const setRecordInfo = (v: boolean) => osd().setRecordInfo(v);
 const setRecordWarn = (v: boolean) => osd().setRecordWarn(v);
 const setRecordError = (v: boolean) => osd().setRecordError(v);
-const setRecordNetworkTraffic = (v: boolean) =>
-  osd().setRecordNetworkTraffic(v);
+const setRecordNetworkTraffic = (v: boolean) => osd().setRecordNetworkTraffic(v);
 const flushLogs = () => osd().flushLogs();
 const flushDebugs = () => osd().flushDebugs();
 const flushInfos = () => osd().flushInfos();
@@ -125,17 +124,13 @@ const NETWORK_FILTERS: OnScreenDebuggerFilterOptions[] = [
 
 // --- Pure functions ---
 
-export const isNetworkFilters = (
-  filt: OnScreenDebuggerFilterOptions,
-): boolean => NETWORK_FILTERS.includes(filt);
+export const isNetworkFilters = (filt: OnScreenDebuggerFilterOptions): boolean =>
+  NETWORK_FILTERS.includes(filt);
 
 /**
  * Safely parses a JSON string, returning a fallback value on failure.
  */
-export const safeJsonParse = (
-  value: string,
-  fallback: unknown = {},
-): unknown => {
+export const safeJsonParse = (value: string, fallback: unknown = {}): unknown => {
   try {
     return JSON.parse(value);
   } catch {
@@ -148,8 +143,7 @@ export const safeJsonParse = (
  * Returns true for fetch/xhr, false for other types (img, css, script, etc.)
  */
 const isFetchOrXhr = (entry: LogEntry): boolean => {
-  const performanceHeader =
-    entry.extraParams?.networkTraffic?.options?.headers?.['x-performance'];
+  const performanceHeader = entry.extraParams?.networkTraffic?.options?.headers?.['x-performance'];
 
   if (performanceHeader) {
     try {
@@ -172,7 +166,7 @@ const isFetchOrXhr = (entry: LogEntry): boolean => {
  */
 export const filterNetworkTraffic = (
   entries: LogEntry[],
-  filterType: 'fetch_xhr' | 'other_network' | 'all_network',
+  filterType: 'fetch_xhr' | 'other_network' | 'all_network'
 ): LogEntry[] => {
   switch (filterType) {
     case 'fetch_xhr':
@@ -190,7 +184,7 @@ export const filterNetworkTraffic = (
  */
 export const filterNetworkTrafficByUrl = (
   entries: LogEntry[],
-  filterType: 'dal' | 'sas' | 'logstash' | 'all_analytics',
+  filterType: 'dal' | 'sas' | 'logstash' | 'all_analytics'
 ): LogEntry[] => {
   const urlPatterns: Record<'dal' | 'sas' | 'logstash', string> = {
     dal: 'dal.data.cbc.ca',

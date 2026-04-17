@@ -1,9 +1,6 @@
 import classNames from 'classnames';
 
-import {
-  useDebugModalVisibility,
-  useOnScreenDebuggerStore,
-} from './store/onScreenDebuggerStore';
+import { useDebugModalVisibility, useOnScreenDebuggerStore } from './store/onScreenDebuggerStore';
 import { toVw } from './utils';
 import Button from './components/DebugButton/DebugButton';
 
@@ -74,13 +71,11 @@ const OnScreenDebuggerToolbar = ({
   triggerEntriesUpdate,
 }: OnScreenDebuggerToolbarProps) => {
   const debugModalVisibility = useDebugModalVisibility();
-  const setQuickKeySequence = useOnScreenDebuggerStore(
-    s => s.setQuickKeySequence,
-  );
+  const setQuickKeySequence = useOnScreenDebuggerStore(s => s.setQuickKeySequence);
 
   const renderFilterButtons = (
     buttons: FilterButtonConfig[],
-    containerNav: EnhancedNavMap[string],
+    containerNav: EnhancedNavMap[string]
   ) => (
     <FocusDiv nav={containerNav} className={styles.modalQuickActionsButtons}>
       {buttons.map(({ mode, navKey, label, ariaLabel }) => (
@@ -115,14 +110,9 @@ const OnScreenDebuggerToolbar = ({
     >
       <div className={styles.modalQuickActionsSection}>
         <h2 className={styles.modalDebuggerTitle}>{LABELS.TITLE}</h2>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_RETURN}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_RETURN}</h3>
         <p>{LABELS.DESC_RETURN}</p>
-        <FocusDiv
-          nav={nav.QUICK_ACTIONS_CONTAINER}
-          className={styles.modalQuickActionsButtons}
-        >
+        <FocusDiv nav={nav.QUICK_ACTIONS_CONTAINER} className={styles.modalQuickActionsButtons}>
           <Button
             className={styles.modalButton}
             classNameFocused={classNames({
@@ -167,14 +157,9 @@ const OnScreenDebuggerToolbar = ({
         </FocusDiv>
       </div>
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_SETTINGS}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_SETTINGS}</h3>
         <p>{LABELS.DESC_SETTINGS}</p>
-        <FocusDiv
-          nav={nav.SETTINGS_CONTAINER}
-          className={styles.modalQuickActionsButtons}
-        >
+        <FocusDiv nav={nav.SETTINGS_CONTAINER} className={styles.modalQuickActionsButtons}>
           <Button
             className={styles.modalButton}
             classNameFocused={classNames({
@@ -184,9 +169,7 @@ const OnScreenDebuggerToolbar = ({
               onToggleAutoFocus();
               triggerEntriesUpdate();
             }}
-            onFocus={() =>
-              updateToolbarScroll(nav.AUTO_SCROLL_TO_NEW_ENTRY_BUTTON.id)
-            }
+            onFocus={() => updateToolbarScroll(nav.AUTO_SCROLL_TO_NEW_ENTRY_BUTTON.id)}
             nav={nav.AUTO_SCROLL_TO_NEW_ENTRY_BUTTON}
             ariaLabel={LABELS.ARIA_AUTO_DETAILS_FOCUS}
           >
@@ -213,9 +196,7 @@ const OnScreenDebuggerToolbar = ({
               [styles.modalButtonFocused]: debugModalVisibility === 'focusable',
             })}
             onClick={() => setQuickKeySequence(!quickKeySequenceEnabled)}
-            onFocus={() =>
-              updateToolbarScroll(nav.QUICK_KEY_SEQUENCE_BUTTON.id)
-            }
+            onFocus={() => updateToolbarScroll(nav.QUICK_KEY_SEQUENCE_BUTTON.id)}
             nav={nav.QUICK_KEY_SEQUENCE_BUTTON}
             ariaLabel={LABELS.ARIA_QUICK_KEY_SEQUENCE}
           >
@@ -225,59 +206,42 @@ const OnScreenDebuggerToolbar = ({
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_RECORDING}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_RECORDING}</h3>
         <p>{LABELS.DESC_RECORDING}</p>
-        <FocusDiv
-          nav={nav.RECORDING_STATUS_CONTAINER}
-          className={styles.modalQuickActionsButtons}
-        >
-          {RECORDING_BUTTONS.map(
-            ({ navKey, label, ariaLabel, selectorKey, action }) => (
-              <Button
-                key={navKey}
-                className={classNames(styles.modalButton, {
-                  [styles.modalButtonRecordingActive]:
-                    recordingFlags[selectorKey],
-                })}
-                classNameFocused={classNames({
-                  [styles.modalButtonFocused]:
-                    debugModalVisibility === 'focusable',
-                })}
-                onClick={() => action(!recordingFlags[selectorKey])}
-                onFocus={() => updateToolbarScroll(nav[navKey].id)}
-                nav={nav[navKey]}
-                ariaLabel={ariaLabel}
-              >
-                {label}
-              </Button>
-            ),
-          )}
+        <FocusDiv nav={nav.RECORDING_STATUS_CONTAINER} className={styles.modalQuickActionsButtons}>
+          {RECORDING_BUTTONS.map(({ navKey, label, ariaLabel, selectorKey, action }) => (
+            <Button
+              key={navKey}
+              className={classNames(styles.modalButton, {
+                [styles.modalButtonRecordingActive]: recordingFlags[selectorKey],
+              })}
+              classNameFocused={classNames({
+                [styles.modalButtonFocused]: debugModalVisibility === 'focusable',
+              })}
+              onClick={() => action(!recordingFlags[selectorKey])}
+              onFocus={() => updateToolbarScroll(nav[navKey].id)}
+              nav={nav[navKey]}
+              ariaLabel={ariaLabel}
+            >
+              {label}
+            </Button>
+          ))}
         </FocusDiv>
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_FLUSH}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FLUSH}</h3>
         <p>
           {LABELS.DESC_FLUSH}{' '}
-          <span className={styles.modalQuickActionsFeedback}>
-            {flushFeedbackLabel}
-          </span>
+          <span className={styles.modalQuickActionsFeedback}>{flushFeedbackLabel}</span>
         </p>
-        <FocusDiv
-          nav={nav.FLUSH_CONTAINER}
-          className={styles.modalQuickActionsButtons}
-        >
+        <FocusDiv nav={nav.FLUSH_CONTAINER} className={styles.modalQuickActionsButtons}>
           {FLUSH_BUTTONS.map(({ navKey, label, ariaLabel, action }) => (
             <Button
               key={navKey}
               className={styles.modalButton}
               classNameFocused={classNames({
-                [styles.modalButtonFocused]:
-                  debugModalVisibility === 'focusable',
+                [styles.modalButtonFocused]: debugModalVisibility === 'focusable',
               })}
               onClick={() => {
                 action();
@@ -297,33 +261,21 @@ const OnScreenDebuggerToolbar = ({
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_FILTER_TERMINAL}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_TERMINAL}</h3>
         <p>{LABELS.DESC_FILTER_TERMINAL}</p>
         {renderFilterButtons(TERMINAL_FILTER_BUTTONS, nav.DEBUG_MODE_CONTAINER)}
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_FILTER_NETWORK_TYPE}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_TYPE}</h3>
         <p>{LABELS.DESC_FILTER_NETWORK_TYPE}</p>
-        {renderFilterButtons(
-          NETWORK_TYPE_FILTER_BUTTONS,
-          nav.DEBUG_MODE_NETWORK_CONTAINER,
-        )}
+        {renderFilterButtons(NETWORK_TYPE_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_CONTAINER)}
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>
-          {LABELS.SECTION_FILTER_NETWORK_API}
-        </h3>
+        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_API}</h3>
         <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
-        {renderFilterButtons(
-          NETWORK_API_FILTER_BUTTONS,
-          nav.DEBUG_MODE_NETWORK_API_CONTAINER,
-        )}
+        {renderFilterButtons(NETWORK_API_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_API_CONTAINER)}
       </div>
     </DOMScroll>
   );

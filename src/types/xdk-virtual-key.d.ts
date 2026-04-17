@@ -3,19 +3,11 @@ declare module '@accedo/xdk-virtual-key' {
     vKey: { [key: string]: string | number };
   };
 
-  export const recode: (
-    oldCode: string,
-    code: string,
-    key?: string,
-  ) => KeyboardEvent;
+  export const recode: (oldCode: string, code: string, key?: string) => KeyboardEvent;
 
   export const addVKeys: (mapping: Mapping, iterable: MapConstructor) => void;
 
-  export const addVKey: (
-    mapping: Mapping,
-    code: string,
-    value: string | number,
-  ) => void;
+  export const addVKey: (mapping: Mapping, code: string, value: string | number) => void;
 
   export type Key = {
     id: string;

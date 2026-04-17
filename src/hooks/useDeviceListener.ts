@@ -7,7 +7,7 @@ import useEvent from './useEvent';
 export default function useDeviceListener<EventData = any>(
   event: string,
   callback: Handler<EventData>,
-  once = false,
+  once = false
 ) {
   const handlerFn = useEvent(callback);
 

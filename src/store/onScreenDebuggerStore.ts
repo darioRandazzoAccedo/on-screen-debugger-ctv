@@ -9,13 +9,7 @@ const IS_INTERNAL_BUILD = APP_ENV !== 'production';
 
 export type DebugModalVisibility = 'hidden' | 'not-focusable' | 'focusable';
 
-export type LogEntryType =
-  | 'log'
-  | 'debug'
-  | 'info'
-  | 'warn'
-  | 'error'
-  | 'networkTraffic';
+export type LogEntryType = 'log' | 'debug' | 'info' | 'warn' | 'error' | 'networkTraffic';
 
 export type FetchEntryType = {
   url: string;
@@ -25,13 +19,7 @@ export type FetchEntryType = {
     headers?: Record<string, string>;
     credentials?: 'include' | 'omit' | 'same-origin';
     mode?: 'cors' | 'no-cors' | 'same-origin';
-    cache?:
-      | 'default'
-      | 'no-store'
-      | 'reload'
-      | 'no-cache'
-      | 'force-cache'
-      | 'only-if-cached';
+    cache?: 'default' | 'no-store' | 'reload' | 'no-cache' | 'force-cache' | 'only-if-cached';
     redirect?: 'follow' | 'error' | 'manual';
     referrer?: 'client' | 'no-referrer';
     referrerPolicy?:
@@ -91,8 +79,7 @@ const ENTRIES_LIMIT = 100;
 const ENTRIES_FLUSH_AMOUNT = ENTRIES_LIMIT * 0.5;
 const DEBUG_ENTRY_PREFIX = 'DEBUG_ENTRY_';
 const ENTRIES_NETWORK_TRAFFIC_LIMIT = 500;
-const ENTRIES_NETWORK_TRAFFIC_FLUSH_AMOUNT =
-  ENTRIES_NETWORK_TRAFFIC_LIMIT * 0.5;
+const ENTRIES_NETWORK_TRAFFIC_FLUSH_AMOUNT = ENTRIES_NETWORK_TRAFFIC_LIMIT * 0.5;
 
 const assembleFetchParams = (payload: FetchEntryType) => {
   const method = payload.options?.method ?? 'GET';
@@ -106,9 +93,8 @@ const initialIsEnabled = (): OnScreenDebuggerMode =>
   IS_INTERNAL_BUILD ? osdStorage.debuggerAppStartDevOption.get() : 'off';
 
 const debugModalVisibilityFromIsEnabled = (
-  isEnabled: OnScreenDebuggerMode,
-): DebugModalVisibility =>
-  isEnabled === 'active-on-start' ? 'not-focusable' : 'hidden';
+  isEnabled: OnScreenDebuggerMode
+): DebugModalVisibility => (isEnabled === 'active-on-start' ? 'not-focusable' : 'hidden');
 
 const initialDebuggerState = (() => {
   const isEnabled = initialIsEnabled();
@@ -172,7 +158,7 @@ const pushLogEntry = (
   list: LogEntry[],
   payload: LogPayload,
   type: LogEntryType,
-  extraLogLines: string[],
+  extraLogLines: string[]
 ) => {
   if (list.length >= ENTRIES_LIMIT) {
     list.splice(0, ENTRIES_FLUSH_AMOUNT);
@@ -214,8 +200,7 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       debuggerScrollBackNonce: 0,
       debuggerScrollIsScrolled: false,
 
-      setDebuggerScrollIsScrolled: debuggerScrollIsScrolled =>
-        set({ debuggerScrollIsScrolled }),
+      setDebuggerScrollIsScrolled: debuggerScrollIsScrolled => set({ debuggerScrollIsScrolled }),
 
       setRecordLog: recordLog => set({ recordLog }),
       flushLogs: () => set({ log: [] }),
@@ -227,8 +212,7 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       flushWarns: () => set({ warn: [] }),
       setRecordError: recordError => set({ recordError }),
       flushErrors: () => set({ error: [] }),
-      setRecordNetworkTraffic: recordNetworkTraffic =>
-        set({ recordNetworkTraffic }),
+      setRecordNetworkTraffic: recordNetworkTraffic => set({ recordNetworkTraffic }),
       flushNetworkTraffic: () => set({ networkTraffic: [] }),
 
       addLog: payload => {
@@ -363,17 +347,13 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
 
           const idx = networkTraffic.findIndex(
             entry =>
-              entry.extraParams?.networkTraffic?.url === payload.url &&
-              entry.time === newEntry.time,
+              entry.extraParams?.networkTraffic?.url === payload.url && entry.time === newEntry.time
           );
 
           if (idx === -1) {
             networkTraffic.push(newEntry);
           } else {
-            console.error(
-              'trying to insert duplicate network traffic entry, SKIPPED: ',
-              newEntry,
-            );
+            console.error('trying to insert duplicate network traffic entry, SKIPPED: ', newEntry);
           }
 
           return { networkTraffic };
@@ -384,8 +364,7 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
         const { isEnabled } = get();
 
         set({
-          debugModalVisibility:
-            isEnabled !== 'off' ? debugModalVisibility : 'hidden',
+          debugModalVisibility: isEnabled !== 'off' ? debugModalVisibility : 'hidden',
           lastChangeTime: Date.now(),
         });
       },
@@ -425,18 +404,14 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       name: 'on-screen-debugger',
       storage: createJSONStorage(() => localStorage),
       merge: (persistedState, currentState) => {
-        const persisted = persistedState as
-          | Partial<OnScreenDebuggerStoreState>
-          | undefined;
+        const persisted = persistedState as Partial<OnScreenDebuggerStoreState> | undefined;
         const { debugModalVisibility: _discarded, ...rest } = persisted ?? {};
         const merged = {
           ...currentState,
           ...rest,
         } as OnScreenDebuggerStoreState;
 
-        merged.debugModalVisibility = debugModalVisibilityFromIsEnabled(
-          merged.isEnabled,
-        );
+        merged.debugModalVisibility = debugModalVisibilityFromIsEnabled(merged.isEnabled);
 
         return merged;
       },
@@ -450,15 +425,13 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
         recordError: s.recordError,
         recordNetworkTraffic: s.recordNetworkTraffic,
       }),
-    },
-  ),
+    }
+  )
 );
 
-export const useIsDebuggerEnabled = () =>
-  useOnScreenDebuggerStore(s => s.isEnabled);
+export const useIsDebuggerEnabled = () => useOnScreenDebuggerStore(s => s.isEnabled);
 
-export const useDebugModalVisibility = () =>
-  useOnScreenDebuggerStore(s => s.debugModalVisibility);
+export const useDebugModalVisibility = () => useOnScreenDebuggerStore(s => s.debugModalVisibility);
 
 export const getDebugModalVisibilitySync = () =>
   useOnScreenDebuggerStore.getState().debugModalVisibility;

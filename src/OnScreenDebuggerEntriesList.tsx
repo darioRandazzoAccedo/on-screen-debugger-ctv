@@ -44,12 +44,7 @@ const renderNetworkTrafficContent = (item: LogEntry) => {
   return (
     <span className={styles.modalNetworkTrafficEntry}>
       <span className={styles.modalNetworkTrafficMethod}>{method}</span>
-      <span
-        className={classNames(
-          styles.modalStatusIndicator,
-          getStatusIndicatorClass(status),
-        )}
-      >
+      <span className={classNames(styles.modalStatusIndicator, getStatusIndicatorClass(status))}>
         &bull;
       </span>
       <span className={styles.modalNetworkTrafficStatus}>{status}</span>
@@ -78,10 +73,7 @@ const OnScreenDebuggerEntriesList = ({
     className={styles.modalDebugModeContentData}
     height={toVw(HALF_HEIGHT_MODAL)}
   >
-    <FocusDiv
-      nav={nav.DEBUG_MODE_ENTRIES_LIST}
-      className={styles.modalDebugModeContentDataList}
-    >
+    <FocusDiv nav={nav.DEBUG_MODE_ENTRIES_LIST} className={styles.modalDebugModeContentDataList}>
       {entries.map((item: LogEntry, index: number) => {
         const entryId = item.id;
         const entryNav = nav[entryId];
@@ -92,24 +84,19 @@ const OnScreenDebuggerEntriesList = ({
 
         const joinedParams = item.params.join(' ');
         const joinedParamsSlice =
-          joinedParams.length > 150
-            ? `${joinedParams.slice(0, 150)}...`
-            : joinedParams;
+          joinedParams.length > 150 ? `${joinedParams.slice(0, 150)}...` : joinedParams;
 
         return (
           <Button
             key={entryId}
             nav={entryNav}
             className={classNames(styles.modalDebugModeContentDataItem, {
-              [styles.modalDebugModeContentDataItemError]:
-                item.type === 'error',
+              [styles.modalDebugModeContentDataItemError]: item.type === 'error',
               [styles.modalDebugModeContentDataItemWarn]: item.type === 'warn',
               [styles.modalDebugModeContentDataItemInfo]: item.type === 'info',
-              [styles.modalDebugModeContentDataItemDebug]:
-                item.type === 'debug',
+              [styles.modalDebugModeContentDataItemDebug]: item.type === 'debug',
               [styles.modalDebugModeContentDataItemLog]: item.type === 'log',
-              [styles.modalDebugModeContentDataItemNetworkTraffic]:
-                item.type === 'networkTraffic',
+              [styles.modalDebugModeContentDataItemNetworkTraffic]: item.type === 'networkTraffic',
               [styles.modalDebugModeContentDataItemNetworkTrafficPost]:
                 item.type === 'networkTraffic' &&
                 item.extraParams?.networkTraffic?.options?.method === 'POST',
@@ -130,9 +117,7 @@ const OnScreenDebuggerEntriesList = ({
             <span>{new Date(item.time).toLocaleTimeString()}</span>
             <span className={styles.modalDebugModeContentDataItemPipe}>|</span>
 
-            {item.type === 'networkTraffic'
-              ? renderNetworkTrafficContent(item)
-              : joinedParamsSlice}
+            {item.type === 'networkTraffic' ? renderNetworkTrafficContent(item) : joinedParamsSlice}
           </Button>
         );
       })}

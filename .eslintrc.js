@@ -49,11 +49,23 @@ module.exports = {
   },
   overrides: [
     {
-      // Relax rules in ambient declaration files
-      files: ['src/types/**/*.d.ts', '*.d.ts'],
+      // Relax rules in ambient declaration files; paths are peers not installed here
+      files: ['src/**/*.d.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/consistent-type-imports': 'off',
+        'import/no-unresolved': 'off',
+      },
+    },
+    {
+      // Peer packages are not installed in this package’s devDependencies
+      files: [
+        'src/OnScreenDebugger.tsx',
+        'src/hooks/useDeviceListener.ts',
+        'src/hooks/useOnScreenDebugger.ts',
+      ],
+      rules: {
+        'import/no-unresolved': 'off',
       },
     },
   ],

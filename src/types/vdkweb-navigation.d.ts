@@ -53,7 +53,7 @@ declare module '@accedo/vdkweb-navigation/lib/utils/withFocus' {
    * So, we omit these from the Prop validation to prevent a false error
    */
   function withFocus<Props extends object>(
-    element: React.ComponentType<Props>,
+    element: React.ComponentType<Props>
   ): React.ComponentType<Omit<Props & WithFocus, 'isFocused'>>;
 
   export default withFocus;
@@ -100,7 +100,7 @@ declare module '@accedo/vdkweb-navigation/lib/utils/withLayout' {
   };
 
   function withLayout<Props extends object>(
-    element: React.ComponentType<Props>,
+    element: React.ComponentType<Props>
   ): React.ComponentType<Props & WithLayout>;
 
   export default withLayout;
@@ -116,18 +116,10 @@ declare module '@accedo/vdkweb-navigation/lib/focusManager' {
     isFocused: (id: string) => boolean;
     isChildFocused: (id: string) => boolean;
     isValidFocusId: (id: string) => boolean;
-    listenToFocusChanged: (
-      fn: (data: any, previousData: any) => void,
-    ) => () => void;
-    unlistenToFocusChanged: (
-      fn: (data: any, previousData: any) => void,
-    ) => () => void;
-    listenToTrailBuilt: (
-      fn: (data: any, previousData: any) => void,
-    ) => () => void;
-    unlistenToTrailBuilt: (
-      fn: (data: any, previousData: any) => void,
-    ) => () => void;
+    listenToFocusChanged: (fn: (data: any, previousData: any) => void) => () => void;
+    unlistenToFocusChanged: (fn: (data: any, previousData: any) => void) => () => void;
+    listenToTrailBuilt: (fn: (data: any, previousData: any) => void) => () => void;
+    unlistenToTrailBuilt: (fn: (data: any, previousData: any) => void) => () => void;
   };
 
   const focusManager: FocusManager;
@@ -194,13 +186,7 @@ declare module '@accedo/vdkweb-navigation' {
     getData: () => ServiceData;
     setPersistTrail: (persistTrail: boolean) => void;
     resetAll: () => void;
-    trigger: ({
-      eventType,
-      eventData,
-    }: {
-      eventType: string;
-      eventData: any;
-    }) => void;
+    trigger: ({ eventType, eventData }: { eventType: string; eventData: any }) => void;
     EventType: EventType;
     Selectors: Selectors;
   };

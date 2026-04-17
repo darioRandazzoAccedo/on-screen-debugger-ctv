@@ -1,3 +1,3 @@
-import useEvent from 'react-use-event-hook';
+import useEventHook from 'react-use-event-hook';
 
-export default useEvent;
+export default useEventHook;

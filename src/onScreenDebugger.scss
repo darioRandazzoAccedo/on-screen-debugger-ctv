@@ -1,4 +1,4 @@
-@use "functions" as *;
+@use 'functions' as *;
 
 .modal {
   position: absolute;
@@ -353,5 +353,4 @@
     letter-spacing: 0.05em;
     border: vw(5px) solid green;
   }
-
 }

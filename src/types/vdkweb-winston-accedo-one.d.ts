@@ -11,15 +11,12 @@ declare module '@accedo/vdkweb-winston-accedo-one' {
 
   const AccedoOne: {
     initLogLevel: () => void;
-    getLogEventOptions: (
-      msg: string,
-      logConfig?: Omit<LogOptions, 'message'>,
-    ) => LogOptions;
+    getLogEventOptions: (msg: string, logConfig?: Omit<LogOptions, 'message'>) => LogOptions;
     log: (
       level: string,
       msg: string,
       meta?: LogOptions,
-      callback?: (arg1: any, arg2: boolean) => void,
+      callback?: (arg1: any, arg2: boolean) => void
     ) => Promise<unknown>;
     getLogLevel: () => Promise<string>;
   };

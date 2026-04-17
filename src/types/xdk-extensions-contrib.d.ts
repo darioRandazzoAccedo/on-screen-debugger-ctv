@@ -9,8 +9,6 @@ declare module '@accedo/xdk-extensions-contrib' {
 }
 
 declare module '@accedo/xdk-extensions-contrib/esm/tts/id' {
-  import { DeviceConfig } from '@accedo/xdk-config';
-
   export const ID: string;
 
   export default ID;

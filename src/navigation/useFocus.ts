@@ -13,10 +13,7 @@ import lrud, { registerNode, focusFirstFocusableChild } from './lrud';
  * handle this behavior manually and extend it by allowing passing `0`
  * to reference the first focusable child of a node.
  */
-function handleForwardFocus(
-  id: string,
-  forwardFocus: Required<EnhancedXDKNav>['forwardFocus'],
-) {
+function handleForwardFocus(id: string, forwardFocus: Required<EnhancedXDKNav>['forwardFocus']) {
   if (forwardFocus === 0) {
     focusFirstFocusableChild(id);
   } else {
@@ -33,10 +30,7 @@ type UseFocusOptions = NodeOptions & {
   trackFocus?: boolean;
 };
 
-export default function useFocus(
-  nav: EnhancedXDKNav,
-  options: UseFocusOptions = {},
-) {
+export default function useFocus(nav: EnhancedXDKNav, options: UseFocusOptions = {}) {
   const trackFocus = options.trackFocus ?? true;
   // When nav.forwardFocus is passed, state will never update and can be ignored
   const [isFocused, toggleFocus] = useState(false);

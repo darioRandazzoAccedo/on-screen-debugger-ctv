@@ -25,32 +25,26 @@ const OnScreenDebuggerEntryDetails = ({
     {!isNetworkFilters(debuggerFilter) && (
       <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
         {selectedDebugEntryDetails?.time && (
-          <span>
-            {new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}
-          </span>
+          <span>{new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}</span>
         )}
-        {selectedDebugEntryDetails?.extraParams?.log?.map(
-          (logEntry, index: number) => {
-            const logEntryId = `details-log-${index}`;
+        {selectedDebugEntryDetails?.extraParams?.log?.map((logEntry, index: number) => {
+          const logEntryId = `details-log-${index}`;
 
-            return <pre key={logEntryId}>{formatStringWithJson(logEntry)}</pre>;
-          },
-        )}
+          return <pre key={logEntryId}>{formatStringWithJson(logEntry)}</pre>;
+        })}
       </div>
     )}
     {isNetworkFilters(debuggerFilter) && (
       <>
         <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
           {selectedDebugEntryDetails?.time && (
-            <span>
-              {new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}
-            </span>
+            <span>{new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}</span>
           )}
           <pre>
             {`${LABELS.DETAIL_URL}${JSON.stringify(
               selectedDebugEntryDetails?.extraParams?.networkTraffic?.url,
               null,
-              2,
+              2
             )}`}
           </pre>
         </div>
@@ -63,32 +57,28 @@ const OnScreenDebuggerEntryDetails = ({
                 headers: {
                   ...selectedDebugEntryDetails?.extraParams?.options?.headers,
                   'x-performance': safeJsonParse(
-                    selectedDebugEntryDetails?.extraParams?.networkTraffic
-                      ?.options?.headers?.['x-performance'] ?? '{}',
+                    selectedDebugEntryDetails?.extraParams?.networkTraffic?.options?.headers?.[
+                      'x-performance'
+                    ] ?? '{}'
                   ),
                 },
-                body: safeJsonParse(
-                  selectedDebugEntryDetails?.extraParams?.options?.body ?? '{}',
-                ),
+                body: safeJsonParse(selectedDebugEntryDetails?.extraParams?.options?.body ?? '{}'),
               },
               null,
-              2,
+              2
             )}
           </pre>
         </div>
         <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
           {`${LABELS.DETAIL_RESPONSE}${
-            selectedDebugEntryDetails?.extraParams?.networkTraffic?.response
-              ?.status ?? ''
+            selectedDebugEntryDetails?.extraParams?.networkTraffic?.response?.status ?? ''
           }`}
           <pre>
             {JSON.stringify(
-              selectedDebugEntryDetails?.extraParams?.networkTraffic?.response
-                ?.json ??
-                selectedDebugEntryDetails?.extraParams?.networkTraffic?.response
-                  ?.error,
+              selectedDebugEntryDetails?.extraParams?.networkTraffic?.response?.json ??
+                selectedDebugEntryDetails?.extraParams?.networkTraffic?.response?.error,
               null,
-              2,
+              2
             )}
           </pre>
         </div>

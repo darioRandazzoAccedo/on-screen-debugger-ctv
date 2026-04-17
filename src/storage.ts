@@ -2,16 +2,12 @@ import _isObject from 'lodash/isObject';
 
 const IS_GEM = process.env.APP_NAME === 'gem';
 
-const DEBUGGER_APP_START_DEV_OPTION = `${
-  IS_GEM ? 'cbc' : 'ttv'
-}_debuggerAppStartDevOption`;
+const DEBUGGER_APP_START_DEV_OPTION = `${IS_GEM ? 'cbc' : 'ttv'}_debuggerAppStartDevOption`;
 
 const storage = {
   set: (key: string, value: unknown) => {
     try {
-      const stringifiedValue = _isObject(value)
-        ? JSON.stringify(value)
-        : `${value}`;
+      const stringifiedValue = _isObject(value) ? JSON.stringify(value) : `${value}`;
 
       window.localStorage.setItem(key, stringifiedValue);
     } catch (error) {
@@ -36,16 +32,11 @@ const storage = {
   },
 };
 
-export type OnScreenDebuggerMode =
-  | 'off'
-  | 'active-on-demand'
-  | 'active-on-start';
+export type OnScreenDebuggerMode = 'off' | 'active-on-demand' | 'active-on-start';
 
 export const debuggerAppStartDevOption = {
   get(): OnScreenDebuggerMode {
-    return (
-      storage.get<OnScreenDebuggerMode>(DEBUGGER_APP_START_DEV_OPTION) ?? 'off'
-    );
+    return storage.get<OnScreenDebuggerMode>(DEBUGGER_APP_START_DEV_OPTION) ?? 'off';
   },
   remove() {
     storage.remove(DEBUGGER_APP_START_DEV_OPTION);

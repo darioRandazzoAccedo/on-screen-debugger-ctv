@@ -14,9 +14,7 @@ function isNode(node?: string | Node): node is Node {
  */
 export default function useUpdateScroll(id: string) {
   const currentIdRef = useRef('');
-  const setFocusedScrollId = useOnScreenDebuggerStore(
-    s => s.setFocusedScrollId,
-  );
+  const setFocusedScrollId = useOnScreenDebuggerStore(s => s.setFocusedScrollId);
   const latest = useLatest({ setFocusedScrollId });
 
   return useCallback(
@@ -39,6 +37,6 @@ export default function useUpdateScroll(id: string) {
 
       currentIdRef.current = focusedId;
     },
-    [id, latest],
+    [id, latest]
   );
 }

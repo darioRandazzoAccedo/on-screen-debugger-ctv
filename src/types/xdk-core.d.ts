@@ -1,20 +1,8 @@
 declare module '@accedo/xdk-core' {
-
   type Environment = {
-    dispatchEvent: (
-      type: string,
-      data: object,
-      handleError: boolean,
-    ) => boolean;
-    addEventListener: (
-      event: string,
-      callback: (...args: any) => void,
-      once?: boolean,
-    ) => void;
-    removeEventListener: (
-      event: string,
-      callback: (...args: any) => void,
-    ) => void;
+    dispatchEvent: (type: string, data: object, handleError: boolean) => boolean;
+    addEventListener: (event: string, callback: (...args: any) => void, once?: boolean) => void;
+    removeEventListener: (event: string, callback: (...args: any) => void) => void;
     removeAllListeners: () => void;
     deinit: () => void;
     SYSTEM: {

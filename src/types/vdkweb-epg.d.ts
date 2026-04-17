@@ -20,11 +20,7 @@ declare module '@accedo/vdkweb-epg' {
   const ErrorFocusTile: React.ComponentType;
   const ProgramGuideTile: React.ComponentType;
   const FocusContainer: React.ComponentType;
-  const formatProgramTime: (
-    startTime: unknown,
-    endTime: unknown,
-    timeFormat: string,
-  ) => string;
+  const formatProgramTime: (startTime: unknown, endTime: unknown, timeFormat: string) => string;
   const CurrentTimeMarker: React.ComponentType;
   const ProgramLane: React.ComponentType;
   const ChannelColumn: React.ComponentType;

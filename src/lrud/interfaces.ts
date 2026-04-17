@@ -54,11 +54,7 @@ export interface Node extends Tree<Node> {
   onSelect?: (node: Node) => void;
   onInactive?: (node: Node) => void;
   onActive?: (node: Node) => void;
-  onActiveChildChange?: (event: {
-    node: Node;
-    leave: Node | null;
-    enter: Node;
-  }) => void;
+  onActiveChildChange?: (event: { node: Node; leave: Node | null; enter: Node }) => void;
   onBlur?: ({ node, newNode }: onBlurParam) => void;
   onFocus?: (node: Node) => void;
   onMove?: (event: {
@@ -71,16 +67,9 @@ export interface Node extends Tree<Node> {
 }
 
 export interface NodeConfig
-  extends Tree<NodeConfig>,
-    Omit<
-      Node,
-      | 'id'
-      | 'parent'
-      | 'activeChild'
-      | 'children'
-      | 'overrides'
-      | 'overrideSources'
-    > {
+  extends
+    Tree<NodeConfig>,
+    Omit<Node, 'id' | 'parent' | 'activeChild' | 'children' | 'overrides' | 'overrideSources'> {
   id?: NodeId;
   parent?: NodeId;
 }

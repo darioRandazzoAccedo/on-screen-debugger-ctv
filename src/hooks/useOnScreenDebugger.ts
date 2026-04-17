@@ -92,7 +92,7 @@ export const getLabelForSequence = (id: string) => {
  */
 const checkEnableDisableSequence = (
   id: string,
-  currentIndex: number,
+  currentIndex: number
 ): { isDone: boolean; nextIndex: number } => {
   if (id === SEQUENCE_ENABLE_DISABLE_DEBUG_UI[currentIndex].id) {
     const nextIndex = currentIndex + 1;
@@ -120,12 +120,10 @@ const normalizeUrl = (url: string): string => {
 /**
  * Generic function to find a matching pending entry by URL within the time window
  */
-const findMatchingEntry = <
-  T extends { url: string; timestamp: number; dispatched: boolean },
->(
+const findMatchingEntry = <T extends { url: string; timestamp: number; dispatched: boolean }>(
   pendingEntries: Map<string, T[]>,
   url: string,
-  timestamp: number,
+  timestamp: number
 ): T | null => {
   const normalizedUrl = normalizeUrl(url);
 
@@ -181,7 +179,7 @@ const findMatchingEntry = <
  */
 const addPendingEntry = <T extends { url: string }>(
   pendingEntries: Map<string, T[]>,
-  entry: T,
+  entry: T
 ): void => {
   const existing = pendingEntries.get(entry.url) || [];
 
@@ -203,14 +201,12 @@ const addPendingEntry = <T extends { url: string }>(
  * Cleanup old pending entries (generic for both fetch and observer entries)
  */
 const cleanupPendingEntries = <T extends { timestamp: number }>(
-  pendingEntries: Map<string, T[]>,
+  pendingEntries: Map<string, T[]>
 ): void => {
   const now = Date.now();
 
   pendingEntries.forEach((entries, url) => {
-    const filtered = entries.filter(
-      entry => now - entry.timestamp < MAX_PENDING_AGE,
-    );
+    const filtered = entries.filter(entry => now - entry.timestamp < MAX_PENDING_AGE);
 
     if (filtered.length === 0) {
       pendingEntries.delete(url);
@@ -224,25 +220,18 @@ const cleanupPendingEntries = <T extends { timestamp: number }>(
  * Factory for creating console method wrappers that record to the Zustand store.
  */
 const createConsoleWrapper = (
-  addEntry: (payload: {
-    params: string[];
-    callSite: ReturnType<typeof getCallSiteInfo>;
-  }) => void,
-  originalFn: (...args: unknown[]) => void,
+  addEntry: (payload: { params: string[]; callSite: ReturnType<typeof getCallSiteInfo> }) => void,
+  originalFn: (...args: unknown[]) => void
 ): ((...params: unknown[]) => void) => {
   return (...params: unknown[]) => {
     try {
       const callSite = getCallSiteInfo();
-      const dispatchEntry = () =>
-        addEntry({ params: normalizeParams(params), callSite });
+      const dispatchEntry = () => addEntry({ params: normalizeParams(params), callSite });
 
       window.requestAnimationFrame(dispatchEntry);
       originalFn(...params);
     } catch (error) {
-      (window.console as any).originalLog?.(
-        'suppressed error for console wrapper:',
-        error,
-      );
+      (window.console as any).originalLog?.('suppressed error for console wrapper:', error);
     }
   };
 };
@@ -253,7 +242,7 @@ const createConsoleWrapper = (
 const dispatchMergedNetworkEntry = (
   fetchEntry: PendingFetchEntry,
   observerEntry: PendingObserverEntry | null,
-  sourceOrder: string,
+  sourceOrder: string
 ): void => {
   // Build performance info from observer entry (if available)
   const performanceInfo = observerEntry
@@ -312,9 +301,7 @@ const createXMLHttpRequestInterceptor = ({
   pendingObserverEntriesRef,
 }: XHRInterceptorConfig): typeof XMLHttpRequest => {
   // eslint-disable-next-line func-names
-  return function XMLHttpRequestInterceptor(
-    ...args: ConstructorParameters<typeof XMLHttpRequest>
-  ) {
+  return function XMLHttpRequestInterceptor(...args: ConstructorParameters<typeof XMLHttpRequest>) {
     try {
       const xhr = new OriginalXMLHttpRequest(...args);
 
@@ -332,19 +319,12 @@ const createXMLHttpRequestInterceptor = ({
         url: string | URL,
         async?: boolean,
         username?: string | null,
-        password?: string | null,
+        password?: string | null
       ) {
         requestMethod = method.toUpperCase();
         requestUrl = typeof url === 'string' ? url : url.toString();
 
-        return originalOpen.call(
-          this,
-          method,
-          url,
-          async ?? true,
-          username,
-          password,
-        );
+        return originalOpen.call(this, method, url, async ?? true, username, password);
       };
 
       const originalSend = xhr.send;
@@ -404,7 +384,7 @@ const createXMLHttpRequestInterceptor = ({
         const observerEntry = findMatchingEntry(
           pendingObserverEntriesRef.current,
           requestUrl,
-          startTime,
+          startTime
         );
 
         if (observerEntry) {
@@ -435,35 +415,25 @@ const createXMLHttpRequestInterceptor = ({
 
 const useOnScreenDebugger = () => {
   const isOnScreenDebuggerEnabled = useOnScreenDebuggerStore(s => s.isEnabled);
-  const debugModalVisibility = useOnScreenDebuggerStore(
-    s => s.debugModalVisibility,
-  );
+  const debugModalVisibility = useOnScreenDebuggerStore(s => s.debugModalVisibility);
 
-  const quickKeySequenceEnabled = useOnScreenDebuggerStore(
-    s => s.quickKeySequence,
-  );
+  const quickKeySequenceEnabled = useOnScreenDebuggerStore(s => s.quickKeySequence);
   const recordLog = useOnScreenDebuggerStore(s => s.recordLog);
   const recordDebug = useOnScreenDebuggerStore(s => s.recordDebug);
   const recordInfo = useOnScreenDebuggerStore(s => s.recordInfo);
   const recordWarn = useOnScreenDebuggerStore(s => s.recordWarn);
   const recordError = useOnScreenDebuggerStore(s => s.recordError);
-  const recordNetworkTraffic = useOnScreenDebuggerStore(
-    s => s.recordNetworkTraffic,
-  );
+  const recordNetworkTraffic = useOnScreenDebuggerStore(s => s.recordNetworkTraffic);
   const { toggleDebugModal } = useToggleDebugModal();
 
   // Ref to store original and wrapped functions
   const functionsRef = useRef<OriginalFunctions | null>(null);
 
   // Ref to store pending fetch/XHR entries (waiting for PerformanceObserver data)
-  const pendingFetchEntriesRef = useRef<Map<string, PendingFetchEntry[]>>(
-    new Map(),
-  );
+  const pendingFetchEntriesRef = useRef<Map<string, PendingFetchEntry[]>>(new Map());
 
   // Ref to store pending observer entries (waiting for fetch/XHR data)
-  const pendingObserverEntriesRef = useRef<Map<string, PendingObserverEntry[]>>(
-    new Map(),
-  );
+  const pendingObserverEntriesRef = useRef<Map<string, PendingObserverEntry[]>>(new Map());
 
   // Ref to track URLs already dispatched by PerformanceObserver
   const observerDispatchedRef = useRef<Set<string>>(new Set());
@@ -478,18 +448,12 @@ const useOnScreenDebugger = () => {
   const onKeyUp = useEvent((data: { id: string }) => {
     const { id } = data;
 
-    const { isDone, nextIndex } = checkEnableDisableSequence(
-      id,
-      sequenceIndexRef.current,
-    );
+    const { isDone, nextIndex } = checkEnableDisableSequence(id, sequenceIndexRef.current);
 
     sequenceIndexRef.current = nextIndex;
 
     const enableDisableOnScreenDebugger =
-      !IS_PROD &&
-      isOnScreenDebuggerEnabled !== 'off' &&
-      quickKeySequenceEnabled &&
-      isDone;
+      !IS_PROD && isOnScreenDebuggerEnabled !== 'off' && quickKeySequenceEnabled && isDone;
 
     if (enableDisableOnScreenDebugger && debugModalVisibility !== 'focusable') {
       toggleDebugModal('focusable');
@@ -555,10 +519,8 @@ const useOnScreenDebugger = () => {
     const originalError = window.console.error;
     const originalFetch = window.fetch;
     // navigator.sendBeacon() is not supported in Safari 10.1
-    /* eslint-disable compat/compat */
     const originalSendBeacon =
       'sendBeacon' in navigator ? navigator.sendBeacon.bind(navigator) : null;
-    /* eslint-enable compat/compat */
 
     const OriginalXMLHttpRequest = window.XMLHttpRequest;
 
@@ -571,23 +533,23 @@ const useOnScreenDebugger = () => {
 
     const wrappedLog = createConsoleWrapper(
       payload => useOnScreenDebuggerStore.getState().addLog(payload),
-      originalLog,
+      originalLog
     );
     const wrappedDebug = createConsoleWrapper(
       payload => useOnScreenDebuggerStore.getState().addDebug(payload),
-      originalDebug,
+      originalDebug
     );
     const wrappedInfo = createConsoleWrapper(
       payload => useOnScreenDebuggerStore.getState().addInfo(payload),
-      originalInfo,
+      originalInfo
     );
     const wrappedWarn = createConsoleWrapper(
       payload => useOnScreenDebuggerStore.getState().addWarn(payload),
-      originalWarn,
+      originalWarn
     );
     const wrappedError = createConsoleWrapper(
       payload => useOnScreenDebuggerStore.getState().addError(payload),
-      originalError,
+      originalError
     );
 
     // Helper to extract URL from fetch arguments
@@ -609,7 +571,7 @@ const useOnScreenDebugger = () => {
         const observerEntry = findMatchingEntry(
           pendingObserverEntriesRef.current,
           fetchEntry.url,
-          fetchEntry.timestamp,
+          fetchEntry.timestamp
         );
 
         if (observerEntry) {
@@ -617,11 +579,7 @@ const useOnScreenDebugger = () => {
           observerEntry.dispatched = true;
           const dispatchedEntry = { ...fetchEntry, dispatched: true };
 
-          dispatchMergedNetworkEntry(
-            dispatchedEntry,
-            observerEntry,
-            'observer+fetch',
-          );
+          dispatchMergedNetworkEntry(dispatchedEntry, observerEntry, 'observer+fetch');
         } else {
           // No observer entry yet - add to pending for later merging
           addPendingEntry(pendingFetchEntriesRef.current, fetchEntry);
@@ -649,9 +607,7 @@ const useOnScreenDebugger = () => {
     // Wrapped fetch that records network traffic
     // If PerformanceObserver is available, adds to pending entries for later merging
     // If PerformanceObserver is NOT available, dispatches directly to Redux
-    const wrappedFetch = async (
-      ...args: Parameters<typeof window.fetch>
-    ): Promise<Response> => {
+    const wrappedFetch = async (...args: Parameters<typeof window.fetch>): Promise<Response> => {
       const startTime = Date.now();
       const url = getUrlFromFetchArgs(args[0]);
       const options = args[1] || {};
@@ -768,11 +724,7 @@ const useOnScreenDebugger = () => {
   // Network traffic monitoring using PerformanceObserver (hybrid approach)
   // This catches ALL network requests and merges with fetch/XHR detailed data
   useEffect(() => {
-    if (
-      IS_PROD ||
-      isOnScreenDebuggerEnabled === 'off' ||
-      !recordNetworkTraffic
-    ) {
+    if (IS_PROD || isOnScreenDebuggerEnabled === 'off' || !recordNetworkTraffic) {
       return undefined;
     }
 
@@ -781,7 +733,7 @@ const useOnScreenDebugger = () => {
       // PerformanceObserver NOT available - fetch wrapper will dispatch directly
       performanceObserverAvailableRef.current = false;
       console.error(
-        '[useOnScreenDebugger] PerformanceObserver not available, using fetch wrapper fallback',
+        '[useOnScreenDebugger] PerformanceObserver not available, using fetch wrapper fallback'
       );
 
       return undefined;
@@ -795,7 +747,7 @@ const useOnScreenDebugger = () => {
         // PerformanceObserver doesn't support 'resource' type - use fallback
         performanceObserverAvailableRef.current = false;
         console.error(
-          '[useOnScreenDebugger] PerformanceObserver does not support resource type, using fetch wrapper fallback',
+          '[useOnScreenDebugger] PerformanceObserver does not support resource type, using fetch wrapper fallback'
         );
 
         return undefined;
@@ -804,7 +756,7 @@ const useOnScreenDebugger = () => {
       // PerformanceObserver NOT available - use fallback
       performanceObserverAvailableRef.current = false;
       console.warn(
-        '[useOnScreenDebugger] PerformanceObserver not fully supported, using fetch wrapper fallback',
+        '[useOnScreenDebugger] PerformanceObserver not fully supported, using fetch wrapper fallback'
       );
 
       return undefined;
@@ -861,20 +813,14 @@ const useOnScreenDebugger = () => {
 
       // Calculate approximate timestamp from performance timing
       // performance.timeOrigin is not supported in Safari 10.1, Chrome 53 — guarded below
-      /* eslint-disable compat/compat */
       const timeOrigin =
         'timeOrigin' in performance
           ? performance.timeOrigin
           : Date.now() - (performance as Performance).now();
-      /* eslint-enable compat/compat */
       const observerTimestamp = timeOrigin + startTime + duration / 2;
 
       // Try to find matching pending entry from fetch/XHR
-      const fetchEntry = findMatchingEntry(
-        pendingFetchEntriesRef.current,
-        url,
-        observerTimestamp,
-      );
+      const fetchEntry = findMatchingEntry(pendingFetchEntriesRef.current, url, observerTimestamp);
 
       if (fetchEntry) {
         // Fetch/XHR arrived first - merge and dispatch
@@ -892,15 +838,8 @@ const useOnScreenDebugger = () => {
           dispatched: true,
         };
 
-        dispatchMergedNetworkEntry(
-          fetchEntry,
-          observerEntry,
-          `${fetchEntry.source}+observer`,
-        );
-      } else if (
-        initiatorType === 'xmlhttprequest' ||
-        initiatorType === 'fetch'
-      ) {
+        dispatchMergedNetworkEntry(fetchEntry, observerEntry, `${fetchEntry.source}+observer`);
+      } else if (initiatorType === 'xmlhttprequest' || initiatorType === 'fetch') {
         // No fetch entry yet - add to pending observer entries for later merging
 
         const observerEntry: PendingObserverEntry = {
@@ -947,24 +886,22 @@ const useOnScreenDebugger = () => {
     };
 
     // PerformanceObserver is not supported in Safari 10.1, Edge 17 — guarded above with typeof check
-    /* eslint-disable compat/compat */
     const observer = new PerformanceObserver(list => {
       list.getEntries().forEach(handlePerformanceEntry);
     });
-    /* eslint-enable compat/compat */
 
     try {
       (observer as any).observe({ type: 'resource', buffered: true });
 
       console.info(
-        '[useOnScreenDebugger] Hybrid network monitoring started (PerformanceObserver + fetch/XHR)',
+        '[useOnScreenDebugger] Hybrid network monitoring started (PerformanceObserver + fetch/XHR)'
       );
     } catch (error) {
       // PerformanceObserver failed to start - use fallback
       performanceObserverAvailableRef.current = false;
       console.error(
         '[useOnScreenDebugger] PerformanceObserver failed to start, using fetch wrapper fallback:',
-        error,
+        error
       );
 
       return undefined;

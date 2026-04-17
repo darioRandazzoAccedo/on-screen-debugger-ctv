@@ -3,7 +3,7 @@ import lrud from './lrud';
 export function registerOverride(
   source: string,
   target: string,
-  direction: 'up' | 'down' | 'left' | 'right',
+  direction: 'up' | 'down' | 'left' | 'right'
 ) {
   if (!lrud.getNode(source)) {
     console.error(`Origin node ${source} does not exist`);
@@ -27,7 +27,7 @@ export function registerOverride(
     }
 
     console.warn(
-      `Override from ${source} to ${target} in direction ${direction} already exists. It will be removed to register the new overide`,
+      `Override from ${source} to ${target} in direction ${direction} already exists. It will be removed to register the new overide`
     );
 
     lrud.unregisterOverride(sourceNode.id, direction);
