@@ -23,7 +23,6 @@ import {
   TOOLBAR_SCROLL_ID,
   TERMINAL_FILTER_BUTTONS,
   NETWORK_TYPE_FILTER_BUTTONS,
-  NETWORK_API_FILTER_BUTTONS,
   RECORDING_BUTTONS,
   FLUSH_BUTTONS,
   getFlushLabel,
@@ -46,7 +45,9 @@ type OnScreenDebuggerToolbarProps = {
   onFlushFeedbackChange: (label: string) => void;
   debuggerFilter: OnScreenDebuggerFilterOptions;
   onDebuggerFilterChange: (mode: OnScreenDebuggerFilterOptions) => void;
-  filterCounts: Record<OnScreenDebuggerFilterOptions, number>;
+  filterCounts: Record<string, number>;
+  networkApiFilterButtons: FilterButtonConfig[];
+  showNetworkApiFilters: boolean;
   triggerEntriesUpdate: () => void;
 };
 
@@ -68,6 +69,8 @@ const OnScreenDebuggerToolbar = ({
   debuggerFilter,
   onDebuggerFilterChange,
   filterCounts,
+  networkApiFilterButtons,
+  showNetworkApiFilters,
   triggerEntriesUpdate,
 }: OnScreenDebuggerToolbarProps) => {
   const debugModalVisibility = useDebugModalVisibility();
@@ -95,7 +98,7 @@ const OnScreenDebuggerToolbar = ({
           nav={nav[navKey]}
           ariaLabel={ariaLabel}
         >
-          {getFilterCountLabel(label, filterCounts[mode])}
+          {getFilterCountLabel(label, filterCounts[mode] ?? 0)}
         </Button>
       ))}
     </FocusDiv>
@@ -272,11 +275,13 @@ const OnScreenDebuggerToolbar = ({
         {renderFilterButtons(NETWORK_TYPE_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_CONTAINER)}
       </div>
 
-      <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_API}</h3>
-        <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
-        {renderFilterButtons(NETWORK_API_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_API_CONTAINER)}
-      </div>
+      {showNetworkApiFilters && (
+        <div className={styles.modalQuickActionsSection}>
+          <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_API}</h3>
+          <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
+          {renderFilterButtons(networkApiFilterButtons, nav.DEBUG_MODE_NETWORK_API_CONTAINER)}
+        </div>
+      )}
     </DOMScroll>
   );
 };

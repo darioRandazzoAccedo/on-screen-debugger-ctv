@@ -1,4 +1,4 @@
-import { DEBUG_UI_MODAL } from './navigatioMap';
+import { DEBUG_UI_MODAL, networkApiFilterNavId, networkApiFilterNavMapKey } from './navigatioMap';
 import { useOnScreenDebuggerStore } from './store/onScreenDebuggerStore';
 import type { LogEntry } from './store/onScreenDebuggerStore';
 import { LABELS } from './onScreenDebuggerLabels';
@@ -34,9 +34,6 @@ const {
   DEBUG_MODE_FETCH_XHR_BUTTON,
   DEBUG_MODE_OTHER_NETWORK_BUTTON,
   DEBUG_MODE_ALL_NETWORK_BUTTON,
-  DEBUG_MODE_DAL_BUTTON,
-  DEBUG_MODE_SAS_BUTTON,
-  DEBUG_MODE_LOGSTASH_BUTTON,
   DEBUG_MODE_ALL_ANALYTICS_BUTTON,
   QUICK_ACTIONS_CONTAINER,
   DEBUG_MODE_CONTAINER,
@@ -63,6 +60,7 @@ const {
 
 // --- Types ---
 
+/** Built-in filter modes plus host-defined keys from `networkApiUrlPatterns`. */
 export type OnScreenDebuggerFilterOptions =
   | 'logs'
   | 'debug'
@@ -73,10 +71,9 @@ export type OnScreenDebuggerFilterOptions =
   | 'fetch_xhr'
   | 'other_network'
   | 'all_network'
-  | 'dal'
-  | 'sas'
-  | 'logstash'
-  | 'all_analytics';
+  | 'all_analytics'
+  // Host-defined API keys are strings; `string & {}` avoids collapsing the whole union to `string`.
+  | (string & Record<never, never>);
 
 export type FilterButtonConfig = {
   mode: OnScreenDebuggerFilterOptions;
@@ -112,20 +109,22 @@ export const HALF_HEIGHT_MODAL = 500;
 export const ENTRIES_SCROLL_ID = 'debug-ui-modal-entries';
 export const TOOLBAR_SCROLL_ID = 'debug-ui-modal-toolbar';
 
-const NETWORK_FILTERS: OnScreenDebuggerFilterOptions[] = [
+export const getNetworkUrlFilterModes = (
+  urlPatterns: Record<string, string>
+): OnScreenDebuggerFilterOptions[] => [
   'fetch_xhr',
   'other_network',
   'all_network',
-  'dal',
-  'sas',
-  'logstash',
+  ...(Object.keys(urlPatterns) as OnScreenDebuggerFilterOptions[]),
   'all_analytics',
 ];
 
 // --- Pure functions ---
 
-export const isNetworkFilters = (filt: OnScreenDebuggerFilterOptions): boolean =>
-  NETWORK_FILTERS.includes(filt);
+export const isNetworkFilters = (
+  filt: OnScreenDebuggerFilterOptions,
+  urlPatterns: Record<string, string>
+): boolean => getNetworkUrlFilterModes(urlPatterns).includes(filt);
 
 /**
  * Safely parses a JSON string, returning a fallback value on failure.
@@ -181,19 +180,19 @@ export const filterNetworkTraffic = (
 
 /**
  * Filters network traffic entries based on URL patterns.
+ * `filterType` is `all_analytics` or a key of `urlPatterns`.
  */
 export const filterNetworkTrafficByUrl = (
   entries: LogEntry[],
-  filterType: 'dal' | 'sas' | 'logstash' | 'all_analytics'
+  filterType: 'all_analytics' | string,
+  urlPatterns: Record<string, string>
 ): LogEntry[] => {
-  const urlPatterns: Record<'dal' | 'sas' | 'logstash', string> = {
-    dal: 'dal.data.cbc.ca',
-    sas: 'cbc.ca/sas',
-    logstash: 'logstash-4.radio-canada.ca',
-  };
-
   if (filterType === 'all_analytics') {
     const allPatterns = Object.values(urlPatterns);
+
+    if (allPatterns.length === 0) {
+      return [];
+    }
 
     return entries.filter(entry => {
       const url = entry.extraParams?.networkTraffic?.url ?? '';
@@ -203,6 +202,10 @@ export const filterNetworkTrafficByUrl = (
   }
 
   const pattern = urlPatterns[filterType];
+
+  if (pattern === undefined) {
+    return [];
+  }
 
   return entries.filter(entry => {
     const url = entry.extraParams?.networkTraffic?.url ?? '';
@@ -228,10 +231,29 @@ const mapDebugEntries = (entries: LogEntry[]): EnhancedNavMap => {
   return entriesNav;
 };
 
-export const createNavMap = (entries: LogEntry[]): EnhancedNavMap => {
+const buildNetworkApiNavEntries = (networkApiKeys: string[]): EnhancedNavMap => {
+  const dynamic: EnhancedNavMap = {};
+
+  networkApiKeys.forEach(key => {
+    const mapKey = networkApiFilterNavMapKey(key);
+
+    dynamic[mapKey] = {
+      id: networkApiFilterNavId(key),
+      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    };
+  });
+
+  return dynamic;
+};
+
+export const createNavMap = (
+  entries: LogEntry[],
+  networkApiKeys: string[] = []
+): EnhancedNavMap => {
   const entriesNav = mapDebugEntries(entries);
   const entryKeys = Object.keys(entriesNav);
   const lastEntry = entriesNav[entryKeys[entryKeys.length - 1]];
+  const networkApiNavEntries = buildNetworkApiNavEntries(networkApiKeys);
 
   return {
     MODAL_CONTAINER: {
@@ -329,18 +351,7 @@ export const createNavMap = (entries: LogEntry[]): EnhancedNavMap => {
       id: DEBUG_MODE_ALL_NETWORK_BUTTON,
       parent: DEBUG_MODE_NETWORK_CONTAINER,
     },
-    DEBUG_MODE_DAL_BUTTON: {
-      id: DEBUG_MODE_DAL_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
-    },
-    DEBUG_MODE_SAS_BUTTON: {
-      id: DEBUG_MODE_SAS_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
-    },
-    DEBUG_MODE_LOGSTASH_BUTTON: {
-      id: DEBUG_MODE_LOGSTASH_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
-    },
+    ...networkApiNavEntries,
     DEBUG_MODE_ALL_ANALYTICS_BUTTON: {
       id: DEBUG_MODE_ALL_ANALYTICS_BUTTON,
       parent: DEBUG_MODE_NETWORK_API_CONTAINER,
@@ -469,32 +480,28 @@ export const NETWORK_TYPE_FILTER_BUTTONS: FilterButtonConfig[] = [
   },
 ];
 
-export const NETWORK_API_FILTER_BUTTONS: FilterButtonConfig[] = [
-  {
-    mode: 'dal',
-    navKey: 'DEBUG_MODE_DAL_BUTTON',
-    label: LABELS.BTN_FILTER_DAL,
-    ariaLabel: LABELS.ARIA_FILTER_DAL,
-  },
-  {
-    mode: 'sas',
-    navKey: 'DEBUG_MODE_SAS_BUTTON',
-    label: LABELS.BTN_FILTER_SAS,
-    ariaLabel: LABELS.ARIA_FILTER_SAS,
-  },
-  {
-    mode: 'logstash',
-    navKey: 'DEBUG_MODE_LOGSTASH_BUTTON',
-    label: LABELS.BTN_FILTER_LOGSTASH,
-    ariaLabel: LABELS.ARIA_FILTER_LOGSTASH,
-  },
-  {
-    mode: 'all_analytics',
-    navKey: 'DEBUG_MODE_ALL_ANALYTICS_BUTTON',
-    label: LABELS.BTN_FILTER_ALL_ANALYTICS,
-    ariaLabel: LABELS.ARIA_FILTER_ALL_ANALYTICS,
-  },
-];
+export const buildNetworkApiFilterButtons = (
+  urlPatterns: Record<string, string>
+): FilterButtonConfig[] => {
+  const perKey = Object.keys(urlPatterns).map(
+    (key): FilterButtonConfig => ({
+      mode: key as OnScreenDebuggerFilterOptions,
+      navKey: networkApiFilterNavMapKey(key),
+      label: key,
+      ariaLabel: `Network API filter: ${key}`,
+    })
+  );
+
+  return [
+    ...perKey,
+    {
+      mode: 'all_analytics',
+      navKey: 'DEBUG_MODE_ALL_ANALYTICS_BUTTON',
+      label: LABELS.BTN_FILTER_ALL_ANALYTICS,
+      ariaLabel: LABELS.ARIA_FILTER_ALL_ANALYTICS,
+    },
+  ];
+};
 
 export const RECORDING_BUTTONS: RecordingButtonConfig[] = [
   {

@@ -11,18 +11,20 @@ import {
 type OnScreenDebuggerEntryDetailsProps = {
   selectedDebugEntryDetails: LogEntry | null;
   debuggerFilter: OnScreenDebuggerFilterOptions;
+  networkApiUrlPatterns: Record<string, string>;
 };
 
 const OnScreenDebuggerEntryDetails = ({
   selectedDebugEntryDetails,
   debuggerFilter,
+  networkApiUrlPatterns,
 }: OnScreenDebuggerEntryDetailsProps) => (
   <>
     <div className={styles.modalDebugModeContentDataDetailsParams}>
       {selectedDebugEntryDetails?.params?.join(' ').slice(0, 50)}
       ...
     </div>
-    {!isNetworkFilters(debuggerFilter) && (
+    {!isNetworkFilters(debuggerFilter, networkApiUrlPatterns) && (
       <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
         {selectedDebugEntryDetails?.time && (
           <span>{new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}</span>
@@ -34,7 +36,7 @@ const OnScreenDebuggerEntryDetails = ({
         })}
       </div>
     )}
-    {isNetworkFilters(debuggerFilter) && (
+    {isNetworkFilters(debuggerFilter, networkApiUrlPatterns) && (
       <>
         <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
           {selectedDebugEntryDetails?.time && (

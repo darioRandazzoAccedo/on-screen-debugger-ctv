@@ -122,6 +122,9 @@ export type OnScreenDebuggerStoreState = {
   debugModalVisibility: DebugModalVisibility;
   lastChangeTime: number;
   isEnabled: OnScreenDebuggerMode;
+  /** URL substring filters for "Network API" toolbar modes; set by host via `useOnScreenDebugger`. Not persisted. */
+  networkApiUrlPatterns: Record<string, string>;
+  setNetworkApiUrlPatterns: (patterns: Record<string, string>) => void;
   focusedScrollIds: Record<string, string>;
   /** Mirrors Redux scroll.backClicked for debugger scroll views (synced in useSyncDebuggerScrollBackFromRedux). */
   debuggerScrollBackNonce: number;
@@ -196,6 +199,8 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       quickKeySequence: true,
       lastChangeTime: 0,
       ...initialDebuggerState,
+      networkApiUrlPatterns: {},
+      setNetworkApiUrlPatterns: networkApiUrlPatterns => set({ networkApiUrlPatterns }),
       focusedScrollIds: {},
       debuggerScrollBackNonce: 0,
       debuggerScrollIsScrolled: false,

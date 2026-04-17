@@ -67,6 +67,17 @@ const App = () => {
 };
 ```
 
+Optional **`networkUrlPatterns`** (`Record<string, string>`): each **key** becomes a “Network API” filter in `<OnScreenDebugger />`; each **value** is a substring matched with `String.includes` against the request URL. Omit it or pass `{}` to hide that filter group.
+
+```tsx
+useOnScreenDebugger({
+  networkUrlPatterns: {
+    myAnalytics: 'analytics.example.com',
+    billingApi: '/api/billing',
+  },
+});
+```
+
 ### 2. Mount the modal component
 
 Place `<OnScreenDebugger />` anywhere in the tree — it renders nothing when hidden and takes over the full viewport when active.
@@ -159,9 +170,13 @@ Outside React (e.g. logging, tests, or non-UI modules), read the latest snapshot
 
 ### Hooks
 
-#### `useOnScreenDebugger()`
+#### `useOnScreenDebugger(options?)`
 
 Installs all runtime interceptors and key-sequence listener. Must be called once in a mounted React component. Is a no-op when `NODE_ENV === 'production'` or the debugger mode is `'off'`.
+
+Optional argument: **`{ networkUrlPatterns?: Record<string, string> }`**. When set, the modal’s “Filter by Network API” toolbar uses those keys and URL substrings (see Usage 1 above). The value is mirrored on the store as `networkApiUrlPatterns` for the modal; it is not persisted to `localStorage`.
+
+Exported type: **`UseOnScreenDebuggerOptions`**.
 
 #### `useToggleDebugModal()`
 

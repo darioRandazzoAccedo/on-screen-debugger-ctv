@@ -1,4 +1,5 @@
 export { default as useOnScreenDebugger } from './hooks/useOnScreenDebugger';
+export type { UseOnScreenDebuggerOptions } from './hooks/useOnScreenDebugger';
 export {
   useIsDebuggerEnabled,
   useDebugModalVisibility,

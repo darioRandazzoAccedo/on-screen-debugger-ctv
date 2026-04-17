@@ -413,9 +413,15 @@ const createXMLHttpRequestInterceptor = ({
   } as any as typeof XMLHttpRequest;
 };
 
-const useOnScreenDebugger = () => {
+export type UseOnScreenDebuggerOptions = {
+  /** Keys become Network API filter ids/labels; values are URL substrings matched with `includes`. */
+  networkUrlPatterns?: Record<string, string>;
+};
+
+const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
   const isOnScreenDebuggerEnabled = useOnScreenDebuggerStore(s => s.isEnabled);
   const debugModalVisibility = useOnScreenDebuggerStore(s => s.debugModalVisibility);
+  const setNetworkApiUrlPatterns = useOnScreenDebuggerStore(s => s.setNetworkApiUrlPatterns);
 
   const quickKeySequenceEnabled = useOnScreenDebuggerStore(s => s.quickKeySequence);
   const recordLog = useOnScreenDebuggerStore(s => s.recordLog);
@@ -425,6 +431,10 @@ const useOnScreenDebugger = () => {
   const recordError = useOnScreenDebuggerStore(s => s.recordError);
   const recordNetworkTraffic = useOnScreenDebuggerStore(s => s.recordNetworkTraffic);
   const { toggleDebugModal } = useToggleDebugModal();
+
+  useEffect(() => {
+    setNetworkApiUrlPatterns(options?.networkUrlPatterns ?? {});
+  }, [options?.networkUrlPatterns, setNetworkApiUrlPatterns]);
 
   // Ref to store original and wrapped functions
   const functionsRef = useRef<OriginalFunctions | null>(null);

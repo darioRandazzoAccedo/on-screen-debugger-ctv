@@ -1,8 +1,6 @@
 import _isObject from 'lodash/isObject';
 
-const IS_GEM = process.env.APP_NAME === 'gem';
-
-const DEBUGGER_APP_START_DEV_OPTION = `${IS_GEM ? 'cbc' : 'ttv'}_debuggerAppStartDevOption`;
+const DEBUGGER_APP_START_DEV_OPTION = `accedo_debuggerAppStartDevOption`;
 
 const storage = {
   set: (key: string, value: unknown) => {
