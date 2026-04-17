@@ -44,6 +44,15 @@ const {
   DEBUG_MODE_FETCH_XHR_BUTTON,
   DEBUG_MODE_OTHER_NETWORK_BUTTON,
   DEBUG_MODE_ALL_NETWORK_BUTTON,
+  DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+  DEBUG_MODE_HTTP_METHOD_GET_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_POST_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_PUT_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON,
+  DEBUG_MODE_NETWORK_HTTP_METHOD_ALL_BUTTON,
   QUICK_ACTIONS_CONTAINER,
   DEBUG_MODE_CONTAINER,
   DEBUG_MODE_NETWORK_CONTAINER,
@@ -133,12 +142,60 @@ export const listNetworkApiFilterModesFromFamilies = (
   return modes;
 };
 
+const HTTP_METHOD_FILTER_PREFIX = 'http_method_' as const;
+
+export const NETWORK_HTTP_METHODS_FOR_FILTER = [
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+  'OPTIONS',
+] as const;
+
+const NETWORK_HTTP_METHODS_SET = new Set<string>(NETWORK_HTTP_METHODS_FOR_FILTER);
+
+export const buildHttpMethodFilterMode = (method: string): OnScreenDebuggerFilterOptions =>
+  `${HTTP_METHOD_FILTER_PREFIX}${method.toUpperCase()}` as OnScreenDebuggerFilterOptions;
+
+export const HTTP_METHOD_FILTER_MODES: readonly OnScreenDebuggerFilterOptions[] =
+  NETWORK_HTTP_METHODS_FOR_FILTER.map(m => buildHttpMethodFilterMode(m));
+
+export const getEntryHttpMethod = (entry: LogEntry): string =>
+  (entry.extraParams?.networkTraffic?.options?.method ?? 'GET').toUpperCase();
+
+export const filterNetworkTrafficByHttpMethod = (
+  entries: LogEntry[],
+  method: string
+): LogEntry[] => {
+  const upper = method.toUpperCase();
+
+  return entries.filter(entry => getEntryHttpMethod(entry) === upper);
+};
+
+export const parseHttpMethodFilterMode = (mode: string): string | null => {
+  if (!mode.startsWith(HTTP_METHOD_FILTER_PREFIX)) {
+    return null;
+  }
+
+  const suffix = mode.slice(HTTP_METHOD_FILTER_PREFIX.length).toUpperCase();
+
+  if (!NETWORK_HTTP_METHODS_SET.has(suffix)) {
+    return null;
+  }
+
+  return suffix;
+};
+
 // --- Pure functions ---
 
 export const isNetworkFilters = (
   filt: OnScreenDebuggerFilterOptions,
   families: NormalizedNetworkApiUrlPatternsFamily[]
-): boolean => listNetworkApiFilterModesFromFamilies(families).includes(filt);
+): boolean =>
+  listNetworkApiFilterModesFromFamilies(families).includes(filt) ||
+  HTTP_METHOD_FILTER_MODES.includes(filt as (typeof HTTP_METHOD_FILTER_MODES)[number]);
 
 /**
  * Safely parses a JSON string, returning a fallback value on failure.
@@ -379,6 +436,43 @@ export const createNavMap = (
       id: DEBUG_MODE_ALL_NETWORK_BUTTON,
       parent: DEBUG_MODE_NETWORK_CONTAINER,
     },
+    DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER: {
+      id: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+      parent: CONTAINER,
+      orientation: 'horizontal',
+    },
+    DEBUG_MODE_HTTP_METHOD_GET_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_GET_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_POST_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_POST_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_PUT_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_PUT_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_NETWORK_HTTP_METHOD_ALL_BUTTON: {
+      id: DEBUG_MODE_NETWORK_HTTP_METHOD_ALL_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
     ...networkApiNavEntries,
     RECORDING_STATUS_CONTAINER: {
       id: RECORDING_STATUS_CONTAINER,
@@ -501,6 +595,49 @@ export const NETWORK_TYPE_FILTER_BUTTONS: FilterButtonConfig[] = [
     navKey: 'DEBUG_MODE_ALL_NETWORK_BUTTON',
     label: LABELS.BTN_FILTER_ALL_NETWORK,
     ariaLabel: LABELS.ARIA_FILTER_ALL_NETWORK,
+  },
+];
+
+const HTTP_METHOD_FILTER_BUTTON_NAV_KEYS: Record<
+  (typeof NETWORK_HTTP_METHODS_FOR_FILTER)[number],
+  FilterButtonConfig['navKey']
+> = {
+  GET: 'DEBUG_MODE_HTTP_METHOD_GET_BUTTON',
+  HEAD: 'DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON',
+  POST: 'DEBUG_MODE_HTTP_METHOD_POST_BUTTON',
+  PUT: 'DEBUG_MODE_HTTP_METHOD_PUT_BUTTON',
+  PATCH: 'DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON',
+  DELETE: 'DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON',
+  OPTIONS: 'DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON',
+};
+
+const HTTP_METHOD_FILTER_ARIA_LABELS: Record<
+  (typeof NETWORK_HTTP_METHODS_FOR_FILTER)[number],
+  string
+> = {
+  GET: LABELS.ARIA_FILTER_HTTP_METHOD_GET,
+  HEAD: LABELS.ARIA_FILTER_HTTP_METHOD_HEAD,
+  POST: LABELS.ARIA_FILTER_HTTP_METHOD_POST,
+  PUT: LABELS.ARIA_FILTER_HTTP_METHOD_PUT,
+  PATCH: LABELS.ARIA_FILTER_HTTP_METHOD_PATCH,
+  DELETE: LABELS.ARIA_FILTER_HTTP_METHOD_DELETE,
+  OPTIONS: LABELS.ARIA_FILTER_HTTP_METHOD_OPTIONS,
+};
+
+export const NETWORK_HTTP_METHOD_FILTER_BUTTONS: FilterButtonConfig[] = [
+  ...NETWORK_HTTP_METHODS_FOR_FILTER.map(
+    (method): FilterButtonConfig => ({
+      mode: buildHttpMethodFilterMode(method),
+      navKey: HTTP_METHOD_FILTER_BUTTON_NAV_KEYS[method],
+      label: method,
+      ariaLabel: HTTP_METHOD_FILTER_ARIA_LABELS[method],
+    })
+  ),
+  {
+    mode: 'all_network',
+    navKey: 'DEBUG_MODE_NETWORK_HTTP_METHOD_ALL_BUTTON',
+    label: LABELS.BTN_FILTER_ALL_NETWORK,
+    ariaLabel: LABELS.ARIA_FILTER_HTTP_METHOD_ALL,
   },
 ];
 

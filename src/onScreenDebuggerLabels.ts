@@ -9,6 +9,7 @@ export const LABELS = {
   SECTION_FLUSH: 'Flush',
   SECTION_FILTER_TERMINAL: 'Filter by Terminal',
   SECTION_FILTER_NETWORK_TYPE: 'Filter by Network Type',
+  SECTION_FILTER_NETWORK_HTTP_METHOD: 'Filter by HTTP Method',
   SECTION_FILTER_NETWORK_API: 'Filter by Network API',
 
   // Section descriptions
@@ -18,6 +19,7 @@ export const LABELS = {
   DESC_FLUSH: 'Flush currently recorded entries by type.',
   DESC_FILTER_TERMINAL: 'Show traffic based on its Terminal type.',
   DESC_FILTER_NETWORK_TYPE: 'Show traffic based on its Network type.',
+  DESC_FILTER_NETWORK_HTTP_METHOD: 'Show traffic based on the request HTTP method.',
   DESC_FILTER_NETWORK_API: 'Show traffic based on its Network API.',
 
   // Return to Main App buttons
@@ -102,6 +104,14 @@ export const LABELS = {
   ARIA_FILTER_FETCH_XHR: 'Fetch XHR',
   ARIA_FILTER_OTHER_NETWORK: 'Other Network',
   ARIA_FILTER_ALL_NETWORK: 'All Network',
+  ARIA_FILTER_HTTP_METHOD_GET: 'HTTP GET',
+  ARIA_FILTER_HTTP_METHOD_HEAD: 'HTTP HEAD',
+  ARIA_FILTER_HTTP_METHOD_POST: 'HTTP POST',
+  ARIA_FILTER_HTTP_METHOD_PUT: 'HTTP PUT',
+  ARIA_FILTER_HTTP_METHOD_PATCH: 'HTTP PATCH',
+  ARIA_FILTER_HTTP_METHOD_DELETE: 'HTTP DELETE',
+  ARIA_FILTER_HTTP_METHOD_OPTIONS: 'HTTP OPTIONS',
+  ARIA_FILTER_HTTP_METHOD_ALL: 'All HTTP methods',
 } as const;
 
 export const getNetworkApiFamilySectionTitle = (familyName: string) =>

@@ -24,6 +24,7 @@ import {
   TOOLBAR_SCROLL_ID,
   TERMINAL_FILTER_BUTTONS,
   NETWORK_TYPE_FILTER_BUTTONS,
+  NETWORK_HTTP_METHOD_FILTER_BUTTONS,
   RECORDING_BUTTONS,
   FLUSH_BUTTONS,
   getFlushLabel,
@@ -278,6 +279,17 @@ const OnScreenDebuggerToolbar = ({
         <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_TYPE}</h3>
         <p>{LABELS.DESC_FILTER_NETWORK_TYPE}</p>
         {renderFilterButtons(NETWORK_TYPE_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_CONTAINER)}
+      </div>
+
+      <div className={styles.modalQuickActionsSection}>
+        <h3 className={styles.modalQuickActionsTitle}>
+          {LABELS.SECTION_FILTER_NETWORK_HTTP_METHOD}
+        </h3>
+        <p>{LABELS.DESC_FILTER_NETWORK_HTTP_METHOD}</p>
+        {renderFilterButtons(
+          NETWORK_HTTP_METHOD_FILTER_BUTTONS,
+          nav.DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER
+        )}
       </div>
 
       {showNetworkApiFilters &&

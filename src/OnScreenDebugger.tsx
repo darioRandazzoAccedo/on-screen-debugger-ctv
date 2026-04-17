@@ -31,7 +31,10 @@ import {
   TOOLBAR_SCROLL_ID,
   buildNetworkApiFilterButtonsForFamily,
   filterNetworkTraffic,
+  filterNetworkTrafficByHttpMethod,
   filterNetworkTrafficByUrlForFamily,
+  parseHttpMethodFilterMode,
+  HTTP_METHOD_FILTER_MODES,
   createNavMap,
 } from './onScreenDebuggerUtils';
 import OnScreenDebuggerToolbar from './OnScreenDebuggerToolbar';
@@ -54,6 +57,7 @@ const INITIAL_FILTER_COUNTS: Record<string, number> = {
   fetch_xhr: 0,
   other_network: 0,
   all_network: 0,
+  ...Object.fromEntries(HTTP_METHOD_FILTER_MODES.map(m => [m, 0])),
 };
 
 const FIXED_DEBUGGER_FILTERS = new Set<string>([
@@ -66,6 +70,7 @@ const FIXED_DEBUGGER_FILTERS = new Set<string>([
   'fetch_xhr',
   'other_network',
   'all_network',
+  ...HTTP_METHOD_FILTER_MODES,
 ]);
 
 const OnScreenDebugger = () => {
@@ -219,6 +224,13 @@ const OnScreenDebugger = () => {
       }
 
       default: {
+        const httpMethod = parseHttpMethodFilterMode(String(debuggerFilter));
+
+        if (httpMethod) {
+          entriesToUpdate = filterNetworkTrafficByHttpMethod(networkTraffic, httpMethod);
+          break;
+        }
+
         const parsed = parseNetworkApiFilterMode(String(debuggerFilter));
 
         if (parsed) {
@@ -287,6 +299,14 @@ const OnScreenDebugger = () => {
       other_network: filterNetworkTraffic(networkTraffic, 'other_network').length,
       all_network: networkTraffic.length,
     };
+
+    HTTP_METHOD_FILTER_MODES.forEach(mode => {
+      const method = parseHttpMethodFilterMode(String(mode));
+
+      if (method) {
+        counts[String(mode)] = filterNetworkTrafficByHttpMethod(networkTraffic, method).length;
+      }
+    });
 
     networkApiUrlPatternFamilies.forEach(f => {
       Object.keys(f.urlPatterns).forEach(key => {
