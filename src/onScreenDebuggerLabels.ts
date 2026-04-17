@@ -111,7 +111,6 @@ export const LABELS = {
   ARIA_FILTER_HTTP_METHOD_PATCH: 'HTTP PATCH',
   ARIA_FILTER_HTTP_METHOD_DELETE: 'HTTP DELETE',
   ARIA_FILTER_HTTP_METHOD_OPTIONS: 'HTTP OPTIONS',
-  ARIA_FILTER_HTTP_METHOD_ALL: 'All HTTP methods',
 } as const;
 
 export const getNetworkApiFamilySectionTitle = (familyName: string) =>
