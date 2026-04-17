@@ -1,26 +1,12 @@
-export { default as OnScreenDebugger } from './components/onScreenDebugger/OnScreenDebugger';
-export type { OnScreenDebuggerProps } from './components/onScreenDebugger/OnScreenDebugger';
-
+export { default as useOnScreenDebugger } from './hooks/useOnScreenDebugger';
 export {
-  getDebuggerMode,
-  getDebuggerModeFromStorage,
-} from './components/onScreenDebugger/onScreenDebuggerUtils';
-
-export { createLrudAdapter } from './navigation/lrudAdapter';
-export type { NavigationAdapter } from './navigation/types';
-
-export {
-  debuggerStore,
-  getDebuggerState,
-  initDebuggerFromStorage,
-} from './store/debuggerStore';
-export type {
-  DebugModalVisibility,
-  OnScreenDebuggerMode,
-  LogEntry,
-  LogEntryType,
-  FetchEntryType,
-  LogPayload,
-  CallSiteInfo,
-  DebuggerStore,
-} from './store/debuggerStore';
+  useIsDebuggerEnabled,
+  useDebugModalVisibility,
+  useOnScreenDebuggerStore,
+  getDebugModalVisibilitySync,
+  getIsOnScreenDebuggerActiveSync,
+} from './store/onScreenDebuggerStore';
+export { default as useToggleDebugModal } from './hooks/useToggleDebugModal';
+export { default as OnScreenDebugger } from './OnScreenDebugger';
+export type { LogEntry, DebugModalVisibility } from './store/onScreenDebuggerStore';
+export type { OnScreenDebuggerMode } from './storage';

@@ -1,0 +1,14 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "rules": {
+    "scss/at-import-no-partial-leading-underscore": null,
+    "scss/load-no-partial-leading-underscore": true,
+    "selector-class-pattern": null,
+    "custom-property-pattern": null,
+    "function-no-unknown": null,
+    "scss/function-no-unknown": null,
+    "no-descending-specificity": null,
+    "import-notation": null,
+    "declaration-block-no-redundant-longhand-properties": null
+  }
+}

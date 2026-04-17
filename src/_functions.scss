@@ -1,0 +1,13 @@
+@use 'sass:math';
+
+$default-context: 1920;
+
+@function vw($pixels, $context: $default-context) {
+  $vw-context: $context * 0.01 * 1px;
+
+  @if math.is-unitless($pixels) {
+    $pixels: $pixels * 1px;
+  }
+
+  @return math.div($pixels, $vw-context) * 1vw;
+}

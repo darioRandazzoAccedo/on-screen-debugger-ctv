@@ -1,0 +1,24 @@
+.button {
+  background-color: #1a1a2e;
+  border: 0;
+  border-radius: 2.24vw;
+  color: #fff;
+  display: inline-block;
+  font-family: inherit;
+  font-size: 1.67vw;
+  outline: none;
+}
+
+.default-style {
+  margin-right: 1.04vw;
+  padding: 0.94vw 0;
+  width: 13.02vw;
+}
+
+.default-style:focus {
+  outline: 0;
+}
+
+.default-focused {
+  transform: scale(1.03);
+}

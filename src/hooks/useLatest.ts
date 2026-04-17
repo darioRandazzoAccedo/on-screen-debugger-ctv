@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-export default function useLatest<T>(value: T) {
+export default function useLatest<Data>(value: Data) {
   const ref = useRef(value);
 
   ref.current = value;

@@ -1,18 +1,16 @@
 /* eslint-disable no-param-reassign */
-/* eslint-disable tsdoc/syntax */
 import { KeyCodes } from './key-codes';
-import {
+import type {
   Direction,
-  Directions,
   Node,
   NodeConfig,
   NodeId,
   NodeIndex,
   NodeIndexRange,
   Orientation,
-  Orientations,
   Tree,
 } from './interfaces';
+import { Directions, Orientations } from './interfaces';
 
 /**
  * Given an array of values and a goal, return the value from values which is closest to the goal.
@@ -21,9 +19,7 @@ import {
  * @param {number} goal
  */
 export const closestIndex = (values: NodeIndex[], goal: NodeIndex): number =>
-  values.reduce((prev, curr) =>
-    Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev,
-  );
+  values.reduce((prev, curr) => (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev));
 
 /**
  * Checks if a given node is focusable.
@@ -35,7 +31,7 @@ export const isNodeFocusable = (node: Node): boolean => {
     return false;
   }
 
-  return node.isFocusable != null ? node.isFocusable : !!node.selectAction;
+  return node.isFocusable !== undefined ? node.isFocusable : !!node.selectAction;
 };
 
 /**
@@ -43,9 +39,7 @@ export const isNodeFocusable = (node: Node): boolean => {
  *
  * @param {number} keyCode - key code for which corresponding direction is searched
  */
-export const getDirectionForKeyCode = (
-  keyCode: number,
-): Direction | undefined => {
+export const getDirectionForKeyCode = (keyCode: number): Direction | undefined => {
   return KeyCodes[keyCode];
 };
 
@@ -57,9 +51,7 @@ export const getDirectionForKeyCode = (
  *
  * @param orientation - orientation to correct
  */
-export const toValidOrientation = (
-  orientation: Orientation,
-): Orientation | undefined => {
+export const toValidOrientation = (orientation: Orientation): Orientation | undefined => {
   if (!orientation) {
     return undefined;
   }
@@ -85,9 +77,7 @@ export const toValidOrientation = (
  *
  * @param direction - direction to correct
  */
-export const toValidDirection = (
-  direction: Direction | undefined,
-): Direction | undefined => {
+export const toValidDirection = (direction: Direction | undefined): Direction | undefined => {
   if (!direction) {
     return undefined;
   }
@@ -117,7 +107,7 @@ export const toValidDirection = (
  */
 export const isDirectionAndOrientationMatching = (
   orientation: Orientation | undefined,
-  direction: Direction | undefined,
+  direction: Direction | undefined
 ): boolean => {
   if (!orientation || !direction) {
     return false;
@@ -129,11 +119,9 @@ export const isDirectionAndOrientationMatching = (
   return (
     validDirection === Directions.UNSPECIFIED ||
     (validOrientation === Orientations.VERTICAL &&
-      (validDirection === Directions.UP ||
-        validDirection === Directions.DOWN)) ||
+      (validDirection === Directions.UP || validDirection === Directions.DOWN)) ||
     (validOrientation === Orientations.HORIZONTAL &&
-      (validDirection === Directions.LEFT ||
-        validDirection === Directions.RIGHT))
+      (validDirection === Directions.LEFT || validDirection === Directions.RIGHT))
   );
 };
 
@@ -143,10 +131,7 @@ export const isDirectionAndOrientationMatching = (
  * @param {object} node - node, which children index ranges will be examined
  * @param {number} index - examined index value
  */
-export const findChildWithMatchingIndexRange = (
-  node: Node,
-  index: NodeIndex,
-): Node | undefined => {
+export const findChildWithMatchingIndexRange = (node: Node, index: NodeIndex): Node | undefined => {
   if (!node || !node.children) {
     return undefined;
   }
@@ -154,11 +139,7 @@ export const findChildWithMatchingIndexRange = (
   for (let i = 0; i < node.children.length; i += 1) {
     const child = node.children[i];
 
-    if (
-      child.indexRange &&
-      child.indexRange[0] <= index &&
-      child.indexRange[1] >= index
-    ) {
+    if (child.indexRange && child.indexRange[0] <= index && child.indexRange[1] >= index) {
       return child;
     }
   }
@@ -179,7 +160,7 @@ export const findChildWithMatchingIndexRange = (
 export const findChildWithClosestIndex = (
   node: Node | undefined,
   index: NodeIndex,
-  indexRange?: NodeIndexRange,
+  indexRange?: NodeIndexRange
 ): Node | undefined => {
   if (!node || !node.children) {
     return undefined;
@@ -229,10 +210,7 @@ export const insertChildNode = (parent: Node, newChild: Node): void => {
 
   newChild.parent = parent;
 
-  if (
-    typeof newChild.index !== 'number' ||
-    newChild.index > parent.children.length
-  ) {
+  if (typeof newChild.index !== 'number' || newChild.index > parent.children.length) {
     newChild.index = parent.children.length;
     parent.children.push(newChild);
   } else {
@@ -251,10 +229,7 @@ export const insertChildNode = (parent: Node, newChild: Node): void => {
  * @param parent - node from which children given child is about to be removed
  * @param child - node to be removed from parent's children
  */
-export const removeChildNode = (
-  parent: Node | undefined,
-  child: Node | undefined,
-): void => {
+export const removeChildNode = (parent: Node | undefined, child: Node | undefined): void => {
   if (!child || !parent || !parent.children) {
     return;
   }
@@ -288,10 +263,7 @@ export const removeChildNode = (
  * @param {string} nodeId - id of the node
  * @param {object} [nodeConfig] - node parameters
  */
-export const prepareNode = (
-  nodeId: NodeId,
-  nodeConfig: NodeConfig = {},
-): Node => {
+export const prepareNode = (nodeId: NodeId, nodeConfig: NodeConfig = {}): Node => {
   if (!nodeId) {
     throw Error('Node ID has to be defined');
   }
@@ -353,7 +325,7 @@ export const prepareNode = (
  */
 export const traverseNodeSubtree = <NodeType extends Tree<NodeType>>(
   startNode: NodeType,
-  nodeProcessor: (node: NodeType) => boolean | void,
+  nodeProcessor: (node: NodeType) => boolean | void
 ): void => {
   const stack: NodeType[] = [startNode];
   const dummyThis = Object.create(null);
