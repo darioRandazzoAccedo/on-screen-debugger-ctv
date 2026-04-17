@@ -59,9 +59,6 @@ export const LABELS = {
   BTN_FILTER_OTHER_NETWORK: 'other',
   BTN_FILTER_ALL_NETWORK: 'all',
 
-  // Filter by Network API buttons (base names)
-  BTN_FILTER_EVERY_API: 'every api',
-
   // Detail section prefixes
   DETAIL_URL: 'URL: ',
   DETAIL_OPTIONS: 'Options: ',
@@ -105,8 +102,10 @@ export const LABELS = {
   ARIA_FILTER_FETCH_XHR: 'Fetch XHR',
   ARIA_FILTER_OTHER_NETWORK: 'Other Network',
   ARIA_FILTER_ALL_NETWORK: 'All Network',
-  ARIA_FILTER_EVERY_API: 'Every api',
 } as const;
+
+export const getNetworkApiFamilySectionTitle = (familyName: string) =>
+  `${LABELS.SECTION_FILTER_NETWORK_API} — ${familyName}`;
 
 export const getAutoDetailsFocusLabel = (isOn: boolean) =>
   `${LABELS.BTN_AUTO_DETAILS_FOCUS} ${isOn ? '(ON)' : '(OFF)'}`;

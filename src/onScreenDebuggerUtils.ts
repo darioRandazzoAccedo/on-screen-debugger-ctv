@@ -1,7 +1,17 @@
-import { DEBUG_UI_MODAL, networkApiFilterNavId, networkApiFilterNavMapKey } from './navigatioMap';
+import {
+  DEBUG_UI_MODAL,
+  networkApiFamilyContainerNavId,
+  networkApiFamilyContainerNavMapKey,
+  networkApiFamilyEveryNavId,
+  networkApiFamilyEveryNavMapKey,
+  networkApiFamilyPatternNavId,
+  networkApiFamilyPatternNavMapKey,
+} from './navigatioMap';
 import { useOnScreenDebuggerStore } from './store/onScreenDebuggerStore';
 import type { LogEntry } from './store/onScreenDebuggerStore';
 import { LABELS } from './onScreenDebuggerLabels';
+import type { NormalizedNetworkApiUrlPatternsFamily } from './networkApiUrlPatternsTypes';
+import { NETWORK_API_EVERY_SUBMODE, buildNetworkApiFilterMode } from './networkApiUrlPatternsTypes';
 
 const osd = () => useOnScreenDebuggerStore.getState();
 
@@ -34,11 +44,9 @@ const {
   DEBUG_MODE_FETCH_XHR_BUTTON,
   DEBUG_MODE_OTHER_NETWORK_BUTTON,
   DEBUG_MODE_ALL_NETWORK_BUTTON,
-  DEBUG_MODE_EVERY_API_BUTTON,
   QUICK_ACTIONS_CONTAINER,
   DEBUG_MODE_CONTAINER,
   DEBUG_MODE_NETWORK_CONTAINER,
-  DEBUG_MODE_NETWORK_API_CONTAINER,
   DEBUG_MODE_ENTRIES_LIST,
   SETTINGS_CONTAINER,
   QUICK_KEY_SEQUENCE_BUTTON,
@@ -60,7 +68,7 @@ const {
 
 // --- Types ---
 
-/** Built-in filter modes plus host-defined keys from `networkApiUrlPatterns`. */
+/** Built-in filter modes plus composite Network API modes from `networkApiUrlPatternFamilies`. */
 export type OnScreenDebuggerFilterOptions =
   | 'logs'
   | 'debug'
@@ -71,8 +79,7 @@ export type OnScreenDebuggerFilterOptions =
   | 'fetch_xhr'
   | 'other_network'
   | 'all_network'
-  | 'every_api'
-  // Host-defined API keys are strings; `string & {}` avoids collapsing the whole union to `string`.
+  // Composite Network API modes: `${familyId}\u0000${patternKey}` or `${familyId}\u0000__every__`.
   | (string & Record<never, never>);
 
 export type FilterButtonConfig = {
@@ -109,22 +116,29 @@ export const HALF_HEIGHT_MODAL = 500;
 export const ENTRIES_SCROLL_ID = 'debug-ui-modal-entries';
 export const TOOLBAR_SCROLL_ID = 'debug-ui-modal-toolbar';
 
-export const getNetworkUrlFilterModes = (
-  urlPatterns: Record<string, string>
-): OnScreenDebuggerFilterOptions[] => [
-  'fetch_xhr',
-  'other_network',
-  'all_network',
-  ...(Object.keys(urlPatterns) as OnScreenDebuggerFilterOptions[]),
-  'every_api',
-];
+export const listNetworkApiFilterModesFromFamilies = (
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): OnScreenDebuggerFilterOptions[] => {
+  const modes: OnScreenDebuggerFilterOptions[] = ['fetch_xhr', 'other_network', 'all_network'];
+
+  families.forEach(f => {
+    Object.keys(f.urlPatterns).forEach(key => {
+      modes.push(buildNetworkApiFilterMode(f.id, key) as OnScreenDebuggerFilterOptions);
+    });
+    modes.push(
+      buildNetworkApiFilterMode(f.id, NETWORK_API_EVERY_SUBMODE) as OnScreenDebuggerFilterOptions
+    );
+  });
+
+  return modes;
+};
 
 // --- Pure functions ---
 
 export const isNetworkFilters = (
   filt: OnScreenDebuggerFilterOptions,
-  urlPatterns: Record<string, string>
-): boolean => getNetworkUrlFilterModes(urlPatterns).includes(filt);
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): boolean => listNetworkApiFilterModesFromFamilies(families).includes(filt);
 
 /**
  * Safely parses a JSON string, returning a fallback value on failure.
@@ -179,15 +193,14 @@ export const filterNetworkTraffic = (
 };
 
 /**
- * Filters network traffic entries based on URL patterns.
- * `filterType` is `every_api` or a key of `urlPatterns`.
+ * Filters network traffic for one family: either one pattern key or aggregate (`NETWORK_API_EVERY_SUBMODE`).
  */
-export const filterNetworkTrafficByUrl = (
+export const filterNetworkTrafficByUrlForFamily = (
   entries: LogEntry[],
-  filterType: 'every_api' | string,
-  urlPatterns: Record<string, string>
+  urlPatterns: Record<string, string>,
+  patternKeyOrEvery: string
 ): LogEntry[] => {
-  if (filterType === 'every_api') {
+  if (patternKeyOrEvery === NETWORK_API_EVERY_SUBMODE) {
     const allPatterns = Object.values(urlPatterns);
 
     if (allPatterns.length === 0) {
@@ -201,7 +214,7 @@ export const filterNetworkTrafficByUrl = (
     });
   }
 
-  const pattern = urlPatterns[filterType];
+  const pattern = urlPatterns[patternKeyOrEvery];
 
   if (pattern === undefined) {
     return [];
@@ -231,15 +244,35 @@ const mapDebugEntries = (entries: LogEntry[]): EnhancedNavMap => {
   return entriesNav;
 };
 
-const buildNetworkApiNavEntries = (networkApiKeys: string[]): EnhancedNavMap => {
+const buildNetworkApiNavEntriesFromFamilies = (
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): EnhancedNavMap => {
   const dynamic: EnhancedNavMap = {};
 
-  networkApiKeys.forEach(key => {
-    const mapKey = networkApiFilterNavMapKey(key);
+  families.forEach(f => {
+    const containerId = networkApiFamilyContainerNavId(f.id);
+    const containerKey = networkApiFamilyContainerNavMapKey(f.id);
 
-    dynamic[mapKey] = {
-      id: networkApiFilterNavId(key),
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    dynamic[containerKey] = {
+      id: containerId,
+      parent: CONTAINER,
+      orientation: 'horizontal',
+    };
+
+    Object.keys(f.urlPatterns).forEach(patternKey => {
+      const mk = networkApiFamilyPatternNavMapKey(f.id, patternKey);
+
+      dynamic[mk] = {
+        id: networkApiFamilyPatternNavId(f.id, patternKey),
+        parent: containerId,
+      };
+    });
+
+    const everyKey = networkApiFamilyEveryNavMapKey(f.id);
+
+    dynamic[everyKey] = {
+      id: networkApiFamilyEveryNavId(f.id),
+      parent: containerId,
     };
   });
 
@@ -248,12 +281,12 @@ const buildNetworkApiNavEntries = (networkApiKeys: string[]): EnhancedNavMap => 
 
 export const createNavMap = (
   entries: LogEntry[],
-  networkApiKeys: string[] = []
+  networkApiFamilies: NormalizedNetworkApiUrlPatternsFamily[] = []
 ): EnhancedNavMap => {
   const entriesNav = mapDebugEntries(entries);
   const entryKeys = Object.keys(entriesNav);
   const lastEntry = entriesNav[entryKeys[entryKeys.length - 1]];
-  const networkApiNavEntries = buildNetworkApiNavEntries(networkApiKeys);
+  const networkApiNavEntries = buildNetworkApiNavEntriesFromFamilies(networkApiFamilies);
 
   return {
     MODAL_CONTAINER: {
@@ -277,11 +310,6 @@ export const createNavMap = (
     },
     DEBUG_MODE_NETWORK_CONTAINER: {
       id: DEBUG_MODE_NETWORK_CONTAINER,
-      parent: CONTAINER,
-      orientation: 'horizontal',
-    },
-    DEBUG_MODE_NETWORK_API_CONTAINER: {
-      id: DEBUG_MODE_NETWORK_API_CONTAINER,
       parent: CONTAINER,
       orientation: 'horizontal',
     },
@@ -352,10 +380,6 @@ export const createNavMap = (
       parent: DEBUG_MODE_NETWORK_CONTAINER,
     },
     ...networkApiNavEntries,
-    DEBUG_MODE_EVERY_API_BUTTON: {
-      id: DEBUG_MODE_EVERY_API_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
-    },
     RECORDING_STATUS_CONTAINER: {
       id: RECORDING_STATUS_CONTAINER,
       parent: CONTAINER,
@@ -480,25 +504,30 @@ export const NETWORK_TYPE_FILTER_BUTTONS: FilterButtonConfig[] = [
   },
 ];
 
-export const buildNetworkApiFilterButtons = (
-  urlPatterns: Record<string, string>
+export const buildNetworkApiFilterButtonsForFamily = (
+  family: NormalizedNetworkApiUrlPatternsFamily
 ): FilterButtonConfig[] => {
-  const perKey = Object.keys(urlPatterns).map(
+  const perKey = Object.keys(family.urlPatterns).map(
     (key): FilterButtonConfig => ({
-      mode: key as OnScreenDebuggerFilterOptions,
-      navKey: networkApiFilterNavMapKey(key),
+      mode: buildNetworkApiFilterMode(family.id, key) as OnScreenDebuggerFilterOptions,
+      navKey: networkApiFamilyPatternNavMapKey(family.id, key),
       label: key,
-      ariaLabel: `Network API filter: ${key}`,
+      ariaLabel: `Network API filter (${family.name}): ${key}`,
     })
   );
+
+  const everyLabel = `Every ${family.name}`;
 
   return [
     ...perKey,
     {
-      mode: 'every_api',
-      navKey: 'DEBUG_MODE_EVERY_API_BUTTON',
-      label: LABELS.BTN_FILTER_EVERY_API,
-      ariaLabel: LABELS.ARIA_FILTER_EVERY_API,
+      mode: buildNetworkApiFilterMode(
+        family.id,
+        NETWORK_API_EVERY_SUBMODE
+      ) as OnScreenDebuggerFilterOptions,
+      navKey: networkApiFamilyEveryNavMapKey(family.id),
+      label: everyLabel,
+      ariaLabel: everyLabel,
     },
   ];
 };

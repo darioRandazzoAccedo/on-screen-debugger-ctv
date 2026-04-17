@@ -67,16 +67,34 @@ const App = () => {
 };
 ```
 
-Optional **`networkUrlPatterns`** (`Record<string, string>`): each **key** becomes a “Network API” filter in `<OnScreenDebugger />`; each **value** is a substring matched with `String.includes` against the request URL. Omit it or pass `{}` to hide that filter group.
+Optional **`networkUrlPatterns`** (`NetworkApiUrlPatternsFamily[]`): each item is one **toolbar section**. Within a family, each **key** of `urlPatterns` is a filter button; each **value** is a substring matched with `String.includes` against the request URL. The last button in that section is **`Every ${name}`** (union of all patterns in that family). Omit the option or pass `[]` to hide all Network API sections. Prefer a **`useMemo`**’d array when passing an inline literal so the hook does not reset on every render.
 
 ```tsx
-useOnScreenDebugger({
-  networkUrlPatterns: {
-    myAnalytics: 'analytics.example.com',
-    billingApi: '/api/billing',
-  },
-});
+import { useMemo } from 'react';
+import { useOnScreenDebugger } from '@accedo/onscreen-debugger';
+
+const families = useMemo(
+  () => [
+    {
+      name: 'Analytics',
+      urlPatterns: {
+        myAnalytics: 'analytics.example.com',
+        billingApi: '/api/billing',
+      },
+    },
+    {
+      name: 'CDN',
+      id: 'cdn',
+      urlPatterns: { assets: '/static/' },
+    },
+  ],
+  []
+);
+
+useOnScreenDebugger({ networkUrlPatterns: families });
 ```
+
+Composite filter ids (for custom UIs reading the store) use `familyId`, a NUL delimiter (`\u0000`), then either a pattern key or `__every__` for the aggregate. Helpers **`buildNetworkApiFilterMode`**, **`parseNetworkApiFilterMode`**, and constants **`NETWORK_API_FILTER_DELIMITER`** / **`NETWORK_API_EVERY_SUBMODE`** are exported from the package.
 
 ### 2. Mount the modal component
 
@@ -128,7 +146,7 @@ import {
 
 ## Usage 2 (just data)
 
-If you build **your own UI** for captured data instead of (or in addition to) `<OnScreenDebugger />`, your data components can import **`useOnScreenDebuggerStore` only**—they do not need `useOnScreenDebugger`. Subscribe with Zustand selectors for the same slices the modal uses (`log`, `debug`, `info`, `warn`, `error`, `networkTraffic`, plus any other fields on the store you need).
+If you build **your own UI** for captured data instead of (or in addition to) `<OnScreenDebugger />`, your data components can import **`useOnScreenDebuggerStore` only**—they do not need `useOnScreenDebugger`. Subscribe with Zustand selectors for the same slices the modal uses (`log`, `debug`, `info`, `warn`, `error`, `networkTraffic`, `networkApiUrlPatternFamilies`, plus any other fields on the store you need).
 
 Interceptors still have to be installed once for the store to fill: call **`useOnScreenDebugger()` a single time** near the root (see Usage 1). This package does not expose a separate installer; skip mounting `<OnScreenDebugger />` only when your UI fully replaces it.
 
@@ -174,9 +192,9 @@ Outside React (e.g. logging, tests, or non-UI modules), read the latest snapshot
 
 Installs all runtime interceptors and key-sequence listener. Must be called once in a mounted React component. Is a no-op when `NODE_ENV === 'production'` or the debugger mode is `'off'`.
 
-Optional argument: **`{ networkUrlPatterns?: Record<string, string> }`**. When set, the modal’s “Filter by Network API” toolbar uses those keys and URL substrings (see Usage 1 above). The value is mirrored on the store as `networkApiUrlPatterns` for the modal; it is not persisted to `localStorage`.
+Optional argument: **`{ networkUrlPatterns?: NetworkApiUrlPatternsFamily[] }`**. When non-empty, the modal renders one “Filter by Network API — {name}” section per family (see Usage 1). Normalized families are mirrored on the store as **`networkApiUrlPatternFamilies`**; they are not persisted to `localStorage`.
 
-Exported type: **`UseOnScreenDebuggerOptions`**.
+Exported types: **`UseOnScreenDebuggerOptions`**, **`NetworkApiUrlPatternsFamily`**, **`NormalizedNetworkApiUrlPatternsFamily`**.
 
 #### `useToggleDebugModal()`
 

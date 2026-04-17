@@ -5,7 +5,7 @@ import { environment as env } from '@accedo/xdk-core';
 
 import { useDeviceListener, useLatest, useEvent } from './hooks';
 import { focusManager } from './navigation';
-import { DEBUG_UI_MODAL } from './navigatioMap';
+import { DEBUG_UI_MODAL, networkApiFamilyContainerNavMapKey } from './navigatioMap';
 import {
   useOnScreenDebuggerStore,
   type LogEntry,
@@ -20,14 +20,18 @@ import { getStatusBarLabel } from './onScreenDebuggerLabels';
 import OnScreenDebuggerEntriesList from './OnScreenDebuggerEntriesList';
 import OnScreenDebuggerEntryDetails from './OnScreenDebuggerEntryDetails';
 import {
+  NETWORK_API_EVERY_SUBMODE,
+  buildNetworkApiFilterMode,
+  parseNetworkApiFilterMode,
+} from './networkApiUrlPatternsTypes';
+import {
   type OnScreenDebuggerFilterOptions,
-  type FilterButtonConfig,
   type RecordingButtonConfig,
   ENTRIES_SCROLL_ID,
   TOOLBAR_SCROLL_ID,
-  buildNetworkApiFilterButtons,
+  buildNetworkApiFilterButtonsForFamily,
   filterNetworkTraffic,
-  filterNetworkTrafficByUrl,
+  filterNetworkTrafficByUrlForFamily,
   createNavMap,
 } from './onScreenDebuggerUtils';
 import OnScreenDebuggerToolbar from './OnScreenDebuggerToolbar';
@@ -50,7 +54,6 @@ const INITIAL_FILTER_COUNTS: Record<string, number> = {
   fetch_xhr: 0,
   other_network: 0,
   all_network: 0,
-  every_api: 0,
 };
 
 const FIXED_DEBUGGER_FILTERS = new Set<string>([
@@ -63,7 +66,6 @@ const FIXED_DEBUGGER_FILTERS = new Set<string>([
   'fetch_xhr',
   'other_network',
   'all_network',
-  'every_api',
 ]);
 
 const OnScreenDebugger = () => {
@@ -98,7 +100,9 @@ const OnScreenDebugger = () => {
   const warns = useOnScreenDebuggerStore(s => s.warn);
   const errors = useOnScreenDebuggerStore(s => s.error);
   const networkTraffic = useOnScreenDebuggerStore(s => s.networkTraffic);
-  const networkApiUrlPatterns = useOnScreenDebuggerStore(s => s.networkApiUrlPatterns);
+  const networkApiUrlPatternFamilies = useOnScreenDebuggerStore(
+    s => s.networkApiUrlPatternFamilies
+  );
 
   const recordLog = useOnScreenDebuggerStore(s => s.recordLog);
   const recordDebug = useOnScreenDebuggerStore(s => s.recordDebug);
@@ -149,29 +153,35 @@ const OnScreenDebugger = () => {
     }
   }, [focusDetailsMode]);
 
-  const networkApiFilterButtons: FilterButtonConfig[] = useMemo(
-    () => buildNetworkApiFilterButtons(networkApiUrlPatterns),
-    [networkApiUrlPatterns]
+  const networkApiFilterSections = useMemo(
+    () =>
+      networkApiUrlPatternFamilies.map(f => ({
+        name: f.name,
+        buttons: buildNetworkApiFilterButtonsForFamily(f),
+        containerNavKey: networkApiFamilyContainerNavMapKey(f.id),
+      })),
+    [networkApiUrlPatternFamilies]
   );
 
-  const networkApiKeys = useMemo(() => Object.keys(networkApiUrlPatterns), [networkApiUrlPatterns]);
-
   useEffect(() => {
-    const keys = Object.keys(networkApiUrlPatterns);
+    const parsed = parseNetworkApiFilterMode(String(debuggerFilter));
 
-    if (debuggerFilter === 'every_api' && keys.length === 0) {
-      setDebuggerFilter('all_terminal');
+    if (parsed) {
+      const fam = networkApiUrlPatternFamilies.find(x => x.id === parsed.familyId);
+
+      if (!fam) {
+        setDebuggerFilter('all_terminal');
+      }
 
       return;
     }
 
-    if (
-      !FIXED_DEBUGGER_FILTERS.has(String(debuggerFilter)) &&
-      !keys.includes(String(debuggerFilter))
-    ) {
-      setDebuggerFilter('all_terminal');
+    if (FIXED_DEBUGGER_FILTERS.has(String(debuggerFilter))) {
+      return;
     }
-  }, [networkApiUrlPatterns, debuggerFilter]);
+
+    setDebuggerFilter('all_terminal');
+  }, [networkApiUrlPatternFamilies, debuggerFilter]);
 
   const updateEntries = useEvent(() => {
     let entriesToUpdate: LogEntry[] = [];
@@ -208,23 +218,20 @@ const OnScreenDebugger = () => {
         break;
       }
 
-      case 'every_api': {
-        entriesToUpdate = filterNetworkTrafficByUrl(
-          networkTraffic,
-          'every_api',
-          networkApiUrlPatterns
-        );
-        break;
-      }
-
       default: {
-        if (networkApiUrlPatterns[String(debuggerFilter)] !== undefined) {
-          entriesToUpdate = filterNetworkTrafficByUrl(
-            networkTraffic,
-            String(debuggerFilter),
-            networkApiUrlPatterns
-          );
-          break;
+        const parsed = parseNetworkApiFilterMode(String(debuggerFilter));
+
+        if (parsed) {
+          const fam = networkApiUrlPatternFamilies.find(x => x.id === parsed.familyId);
+
+          if (fam) {
+            entriesToUpdate = filterNetworkTrafficByUrlForFamily(
+              networkTraffic,
+              fam.urlPatterns,
+              parsed.patternKeyOrEvery
+            );
+            break;
+          }
         }
 
         let all = [...logs, ...debugs, ...infos, ...warns, ...errors];
@@ -279,18 +286,35 @@ const OnScreenDebugger = () => {
       fetch_xhr: filterNetworkTraffic(networkTraffic, 'fetch_xhr').length,
       other_network: filterNetworkTraffic(networkTraffic, 'other_network').length,
       all_network: networkTraffic.length,
-      every_api: filterNetworkTrafficByUrl(networkTraffic, 'every_api', networkApiUrlPatterns)
-        .length,
     };
 
-    Object.keys(networkApiUrlPatterns).forEach(key => {
-      counts[key] = filterNetworkTrafficByUrl(networkTraffic, key, networkApiUrlPatterns).length;
+    networkApiUrlPatternFamilies.forEach(f => {
+      Object.keys(f.urlPatterns).forEach(key => {
+        const mode = buildNetworkApiFilterMode(f.id, key);
+
+        counts[mode] = filterNetworkTrafficByUrlForFamily(
+          networkTraffic,
+          f.urlPatterns,
+          key
+        ).length;
+      });
+
+      const everyMode = buildNetworkApiFilterMode(f.id, NETWORK_API_EVERY_SUBMODE);
+
+      counts[everyMode] = filterNetworkTrafficByUrlForFamily(
+        networkTraffic,
+        f.urlPatterns,
+        NETWORK_API_EVERY_SUBMODE
+      ).length;
     });
 
     return counts;
   });
 
-  const nav = useMemo(() => createNavMap(entries, networkApiKeys), [entries, networkApiKeys]);
+  const nav = useMemo(
+    () => createNavMap(entries, networkApiUrlPatternFamilies),
+    [entries, networkApiUrlPatternFamilies]
+  );
 
   const triggerEntriesUpdate = useEvent(() => {
     updateEntries();
@@ -315,7 +339,7 @@ const OnScreenDebugger = () => {
 
   useEffect(() => {
     triggerEntriesUpdate();
-  }, [networkApiUrlPatterns, triggerEntriesUpdate]);
+  }, [networkApiUrlPatternFamilies, triggerEntriesUpdate]);
 
   const renderContentDataDetails = useMemo(() => {
     return (
@@ -524,8 +548,8 @@ const OnScreenDebugger = () => {
             debuggerFilter={debuggerFilter}
             onDebuggerFilterChange={setDebuggerFilter}
             filterCounts={filterCounts}
-            networkApiFilterButtons={networkApiFilterButtons}
-            showNetworkApiFilters={networkApiKeys.length > 0}
+            networkApiFilterSections={networkApiFilterSections}
+            showNetworkApiFilters={networkApiFilterSections.length > 0}
             triggerEntriesUpdate={triggerEntriesUpdate}
           />
         </div>
@@ -568,7 +592,7 @@ const OnScreenDebugger = () => {
                     <OnScreenDebuggerEntryDetails
                       selectedDebugEntryDetails={selectedDebugEntryDetails}
                       debuggerFilter={debuggerFilter}
-                      networkApiUrlPatterns={networkApiUrlPatterns}
+                      networkApiUrlPatternFamilies={networkApiUrlPatternFamilies}
                     />
                   </div>
                 )}

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { CallSiteInfo } from '../utils';
+import type { NormalizedNetworkApiUrlPatternsFamily } from '../networkApiUrlPatternsTypes';
 import * as osdStorage from '../storage';
 import { APP_ENV } from '../config/env';
 
@@ -122,9 +123,9 @@ export type OnScreenDebuggerStoreState = {
   debugModalVisibility: DebugModalVisibility;
   lastChangeTime: number;
   isEnabled: OnScreenDebuggerMode;
-  /** URL substring filters for "Network API" toolbar modes; set by host via `useOnScreenDebugger`. Not persisted. */
-  networkApiUrlPatterns: Record<string, string>;
-  setNetworkApiUrlPatterns: (patterns: Record<string, string>) => void;
+  /** Network API filter families; set by host via `useOnScreenDebugger`. Not persisted. */
+  networkApiUrlPatternFamilies: NormalizedNetworkApiUrlPatternsFamily[];
+  setNetworkApiUrlPatternFamilies: (families: NormalizedNetworkApiUrlPatternsFamily[]) => void;
   focusedScrollIds: Record<string, string>;
   /** Mirrors Redux scroll.backClicked for debugger scroll views (synced in useSyncDebuggerScrollBackFromRedux). */
   debuggerScrollBackNonce: number;
@@ -199,8 +200,9 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       quickKeySequence: true,
       lastChangeTime: 0,
       ...initialDebuggerState,
-      networkApiUrlPatterns: {},
-      setNetworkApiUrlPatterns: networkApiUrlPatterns => set({ networkApiUrlPatterns }),
+      networkApiUrlPatternFamilies: [],
+      setNetworkApiUrlPatternFamilies: networkApiUrlPatternFamilies =>
+        set({ networkApiUrlPatternFamilies }),
       focusedScrollIds: {},
       debuggerScrollBackNonce: 0,
       debuggerScrollIsScrolled: false,

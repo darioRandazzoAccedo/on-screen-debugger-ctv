@@ -14,6 +14,7 @@ import {
   getAutoRefreshLabel,
   getQuickKeySequenceLabel,
   getFilterCountLabel,
+  getNetworkApiFamilySectionTitle,
 } from './onScreenDebuggerLabels';
 import {
   type OnScreenDebuggerFilterOptions,
@@ -46,7 +47,11 @@ type OnScreenDebuggerToolbarProps = {
   debuggerFilter: OnScreenDebuggerFilterOptions;
   onDebuggerFilterChange: (mode: OnScreenDebuggerFilterOptions) => void;
   filterCounts: Record<string, number>;
-  networkApiFilterButtons: FilterButtonConfig[];
+  networkApiFilterSections: {
+    name: string;
+    buttons: FilterButtonConfig[];
+    containerNavKey: string;
+  }[];
   showNetworkApiFilters: boolean;
   triggerEntriesUpdate: () => void;
 };
@@ -69,7 +74,7 @@ const OnScreenDebuggerToolbar = ({
   debuggerFilter,
   onDebuggerFilterChange,
   filterCounts,
-  networkApiFilterButtons,
+  networkApiFilterSections,
   showNetworkApiFilters,
   triggerEntriesUpdate,
 }: OnScreenDebuggerToolbarProps) => {
@@ -275,13 +280,16 @@ const OnScreenDebuggerToolbar = ({
         {renderFilterButtons(NETWORK_TYPE_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_CONTAINER)}
       </div>
 
-      {showNetworkApiFilters && (
-        <div className={styles.modalQuickActionsSection}>
-          <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_API}</h3>
-          <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
-          {renderFilterButtons(networkApiFilterButtons, nav.DEBUG_MODE_NETWORK_API_CONTAINER)}
-        </div>
-      )}
+      {showNetworkApiFilters &&
+        networkApiFilterSections.map(section => (
+          <div key={section.containerNavKey} className={styles.modalQuickActionsSection}>
+            <h3 className={styles.modalQuickActionsTitle}>
+              {getNetworkApiFamilySectionTitle(section.name)}
+            </h3>
+            <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
+            {renderFilterButtons(section.buttons, nav[section.containerNavKey])}
+          </div>
+        ))}
     </DOMScroll>
   );
 };
