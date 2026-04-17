@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import type { CallSiteInfo } from '../utils';
+import type { NormalizedNetworkApiUrlPatternsFamily } from '../networkApiUrlPatternsTypes';
 import * as osdStorage from '../storage';
 import { APP_ENV } from '../config/env';
 
@@ -122,6 +123,9 @@ export type OnScreenDebuggerStoreState = {
   debugModalVisibility: DebugModalVisibility;
   lastChangeTime: number;
   isEnabled: OnScreenDebuggerMode;
+  /** Network API filter families; set by host via `useOnScreenDebugger`. Not persisted. */
+  networkApiUrlPatternFamilies: NormalizedNetworkApiUrlPatternsFamily[];
+  setNetworkApiUrlPatternFamilies: (families: NormalizedNetworkApiUrlPatternsFamily[]) => void;
   focusedScrollIds: Record<string, string>;
   /** Mirrors Redux scroll.backClicked for debugger scroll views (synced in useSyncDebuggerScrollBackFromRedux). */
   debuggerScrollBackNonce: number;
@@ -196,6 +200,9 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
       quickKeySequence: true,
       lastChangeTime: 0,
       ...initialDebuggerState,
+      networkApiUrlPatternFamilies: [],
+      setNetworkApiUrlPatternFamilies: networkApiUrlPatternFamilies =>
+        set({ networkApiUrlPatternFamilies }),
       focusedScrollIds: {},
       debuggerScrollBackNonce: 0,
       debuggerScrollIsScrolled: false,

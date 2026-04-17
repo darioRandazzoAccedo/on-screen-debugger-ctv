@@ -1,5 +1,6 @@
 import { formatStringWithJson } from './utils';
 import type { LogEntry } from './store/onScreenDebuggerStore';
+import type { NormalizedNetworkApiUrlPatternsFamily } from './networkApiUrlPatternsTypes';
 import styles from './onScreenDebugger.scss';
 import { LABELS } from './onScreenDebuggerLabels';
 import {
@@ -11,18 +12,20 @@ import {
 type OnScreenDebuggerEntryDetailsProps = {
   selectedDebugEntryDetails: LogEntry | null;
   debuggerFilter: OnScreenDebuggerFilterOptions;
+  networkApiUrlPatternFamilies: NormalizedNetworkApiUrlPatternsFamily[];
 };
 
 const OnScreenDebuggerEntryDetails = ({
   selectedDebugEntryDetails,
   debuggerFilter,
+  networkApiUrlPatternFamilies,
 }: OnScreenDebuggerEntryDetailsProps) => (
   <>
     <div className={styles.modalDebugModeContentDataDetailsParams}>
       {selectedDebugEntryDetails?.params?.join(' ').slice(0, 50)}
       ...
     </div>
-    {!isNetworkFilters(debuggerFilter) && (
+    {!isNetworkFilters(debuggerFilter, networkApiUrlPatternFamilies) && (
       <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
         {selectedDebugEntryDetails?.time && (
           <span>{new Date(selectedDebugEntryDetails?.time).toLocaleTimeString()}</span>
@@ -34,7 +37,7 @@ const OnScreenDebuggerEntryDetails = ({
         })}
       </div>
     )}
-    {isNetworkFilters(debuggerFilter) && (
+    {isNetworkFilters(debuggerFilter, networkApiUrlPatternFamilies) && (
       <>
         <div className={styles.modalDebugModeContentDataDetailsExtraParams}>
           {selectedDebugEntryDetails?.time && (

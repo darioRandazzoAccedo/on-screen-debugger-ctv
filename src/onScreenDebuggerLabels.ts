@@ -9,6 +9,7 @@ export const LABELS = {
   SECTION_FLUSH: 'Flush',
   SECTION_FILTER_TERMINAL: 'Filter by Terminal',
   SECTION_FILTER_NETWORK_TYPE: 'Filter by Network Type',
+  SECTION_FILTER_NETWORK_HTTP_METHOD: 'Filter by HTTP Method',
   SECTION_FILTER_NETWORK_API: 'Filter by Network API',
 
   // Section descriptions
@@ -18,6 +19,7 @@ export const LABELS = {
   DESC_FLUSH: 'Flush currently recorded entries by type.',
   DESC_FILTER_TERMINAL: 'Show traffic based on its Terminal type.',
   DESC_FILTER_NETWORK_TYPE: 'Show traffic based on its Network type.',
+  DESC_FILTER_NETWORK_HTTP_METHOD: 'Show traffic based on the request HTTP method.',
   DESC_FILTER_NETWORK_API: 'Show traffic based on its Network API.',
 
   // Return to Main App buttons
@@ -58,12 +60,6 @@ export const LABELS = {
   BTN_FILTER_FETCH_XHR: 'fetch-xhr',
   BTN_FILTER_OTHER_NETWORK: 'other',
   BTN_FILTER_ALL_NETWORK: 'all',
-
-  // Filter by Network API buttons (base names)
-  BTN_FILTER_DAL: 'dal',
-  BTN_FILTER_SAS: 'sas',
-  BTN_FILTER_LOGSTASH: 'logstash',
-  BTN_FILTER_ALL_ANALYTICS: 'all analytics',
 
   // Detail section prefixes
   DETAIL_URL: 'URL: ',
@@ -108,11 +104,17 @@ export const LABELS = {
   ARIA_FILTER_FETCH_XHR: 'Fetch XHR',
   ARIA_FILTER_OTHER_NETWORK: 'Other Network',
   ARIA_FILTER_ALL_NETWORK: 'All Network',
-  ARIA_FILTER_DAL: 'DAL',
-  ARIA_FILTER_SAS: 'SAS',
-  ARIA_FILTER_LOGSTASH: 'Logstash',
-  ARIA_FILTER_ALL_ANALYTICS: 'All Analytics',
+  ARIA_FILTER_HTTP_METHOD_GET: 'HTTP GET',
+  ARIA_FILTER_HTTP_METHOD_HEAD: 'HTTP HEAD',
+  ARIA_FILTER_HTTP_METHOD_POST: 'HTTP POST',
+  ARIA_FILTER_HTTP_METHOD_PUT: 'HTTP PUT',
+  ARIA_FILTER_HTTP_METHOD_PATCH: 'HTTP PATCH',
+  ARIA_FILTER_HTTP_METHOD_DELETE: 'HTTP DELETE',
+  ARIA_FILTER_HTTP_METHOD_OPTIONS: 'HTTP OPTIONS',
 } as const;
+
+export const getNetworkApiFamilySectionTitle = (familyName: string) =>
+  `${LABELS.SECTION_FILTER_NETWORK_API} — ${familyName}`;
 
 export const getAutoDetailsFocusLabel = (isOn: boolean) =>
   `${LABELS.BTN_AUTO_DETAILS_FOCUS} ${isOn ? '(ON)' : '(OFF)'}`;

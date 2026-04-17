@@ -14,6 +14,7 @@ import {
   getAutoRefreshLabel,
   getQuickKeySequenceLabel,
   getFilterCountLabel,
+  getNetworkApiFamilySectionTitle,
 } from './onScreenDebuggerLabels';
 import {
   type OnScreenDebuggerFilterOptions,
@@ -23,7 +24,7 @@ import {
   TOOLBAR_SCROLL_ID,
   TERMINAL_FILTER_BUTTONS,
   NETWORK_TYPE_FILTER_BUTTONS,
-  NETWORK_API_FILTER_BUTTONS,
+  NETWORK_HTTP_METHOD_FILTER_BUTTONS,
   RECORDING_BUTTONS,
   FLUSH_BUTTONS,
   getFlushLabel,
@@ -46,7 +47,13 @@ type OnScreenDebuggerToolbarProps = {
   onFlushFeedbackChange: (label: string) => void;
   debuggerFilter: OnScreenDebuggerFilterOptions;
   onDebuggerFilterChange: (mode: OnScreenDebuggerFilterOptions) => void;
-  filterCounts: Record<OnScreenDebuggerFilterOptions, number>;
+  filterCounts: Record<string, number>;
+  networkApiFilterSections: {
+    name: string;
+    buttons: FilterButtonConfig[];
+    containerNavKey: string;
+  }[];
+  showNetworkApiFilters: boolean;
   triggerEntriesUpdate: () => void;
 };
 
@@ -68,6 +75,8 @@ const OnScreenDebuggerToolbar = ({
   debuggerFilter,
   onDebuggerFilterChange,
   filterCounts,
+  networkApiFilterSections,
+  showNetworkApiFilters,
   triggerEntriesUpdate,
 }: OnScreenDebuggerToolbarProps) => {
   const debugModalVisibility = useDebugModalVisibility();
@@ -95,7 +104,7 @@ const OnScreenDebuggerToolbar = ({
           nav={nav[navKey]}
           ariaLabel={ariaLabel}
         >
-          {getFilterCountLabel(label, filterCounts[mode])}
+          {getFilterCountLabel(label, filterCounts[mode] ?? 0)}
         </Button>
       ))}
     </FocusDiv>
@@ -273,10 +282,26 @@ const OnScreenDebuggerToolbar = ({
       </div>
 
       <div className={styles.modalQuickActionsSection}>
-        <h3 className={styles.modalQuickActionsTitle}>{LABELS.SECTION_FILTER_NETWORK_API}</h3>
-        <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
-        {renderFilterButtons(NETWORK_API_FILTER_BUTTONS, nav.DEBUG_MODE_NETWORK_API_CONTAINER)}
+        <h3 className={styles.modalQuickActionsTitle}>
+          {LABELS.SECTION_FILTER_NETWORK_HTTP_METHOD}
+        </h3>
+        <p>{LABELS.DESC_FILTER_NETWORK_HTTP_METHOD}</p>
+        {renderFilterButtons(
+          NETWORK_HTTP_METHOD_FILTER_BUTTONS,
+          nav.DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER
+        )}
       </div>
+
+      {showNetworkApiFilters &&
+        networkApiFilterSections.map(section => (
+          <div key={section.containerNavKey} className={styles.modalQuickActionsSection}>
+            <h3 className={styles.modalQuickActionsTitle}>
+              {getNetworkApiFamilySectionTitle(section.name)}
+            </h3>
+            <p>{LABELS.DESC_FILTER_NETWORK_API}</p>
+            {renderFilterButtons(section.buttons, nav[section.containerNavKey])}
+          </div>
+        ))}
     </DOMScroll>
   );
 };

@@ -1,7 +1,17 @@
-import { DEBUG_UI_MODAL } from './navigatioMap';
+import {
+  DEBUG_UI_MODAL,
+  networkApiFamilyContainerNavId,
+  networkApiFamilyContainerNavMapKey,
+  networkApiFamilyEveryNavId,
+  networkApiFamilyEveryNavMapKey,
+  networkApiFamilyPatternNavId,
+  networkApiFamilyPatternNavMapKey,
+} from './navigatioMap';
 import { useOnScreenDebuggerStore } from './store/onScreenDebuggerStore';
 import type { LogEntry } from './store/onScreenDebuggerStore';
 import { LABELS } from './onScreenDebuggerLabels';
+import type { NormalizedNetworkApiUrlPatternsFamily } from './networkApiUrlPatternsTypes';
+import { NETWORK_API_EVERY_SUBMODE, buildNetworkApiFilterMode } from './networkApiUrlPatternsTypes';
 
 const osd = () => useOnScreenDebuggerStore.getState();
 
@@ -34,14 +44,17 @@ const {
   DEBUG_MODE_FETCH_XHR_BUTTON,
   DEBUG_MODE_OTHER_NETWORK_BUTTON,
   DEBUG_MODE_ALL_NETWORK_BUTTON,
-  DEBUG_MODE_DAL_BUTTON,
-  DEBUG_MODE_SAS_BUTTON,
-  DEBUG_MODE_LOGSTASH_BUTTON,
-  DEBUG_MODE_ALL_ANALYTICS_BUTTON,
+  DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+  DEBUG_MODE_HTTP_METHOD_GET_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_POST_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_PUT_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON,
+  DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON,
   QUICK_ACTIONS_CONTAINER,
   DEBUG_MODE_CONTAINER,
   DEBUG_MODE_NETWORK_CONTAINER,
-  DEBUG_MODE_NETWORK_API_CONTAINER,
   DEBUG_MODE_ENTRIES_LIST,
   SETTINGS_CONTAINER,
   QUICK_KEY_SEQUENCE_BUTTON,
@@ -63,6 +76,7 @@ const {
 
 // --- Types ---
 
+/** Built-in filter modes plus composite Network API modes from `networkApiUrlPatternFamilies`. */
 export type OnScreenDebuggerFilterOptions =
   | 'logs'
   | 'debug'
@@ -73,10 +87,8 @@ export type OnScreenDebuggerFilterOptions =
   | 'fetch_xhr'
   | 'other_network'
   | 'all_network'
-  | 'dal'
-  | 'sas'
-  | 'logstash'
-  | 'all_analytics';
+  // Composite Network API modes: `${familyId}\u0000${patternKey}` or `${familyId}\u0000__every__`.
+  | (string & Record<never, never>);
 
 export type FilterButtonConfig = {
   mode: OnScreenDebuggerFilterOptions;
@@ -112,20 +124,77 @@ export const HALF_HEIGHT_MODAL = 500;
 export const ENTRIES_SCROLL_ID = 'debug-ui-modal-entries';
 export const TOOLBAR_SCROLL_ID = 'debug-ui-modal-toolbar';
 
-const NETWORK_FILTERS: OnScreenDebuggerFilterOptions[] = [
-  'fetch_xhr',
-  'other_network',
-  'all_network',
-  'dal',
-  'sas',
-  'logstash',
-  'all_analytics',
-];
+export const listNetworkApiFilterModesFromFamilies = (
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): OnScreenDebuggerFilterOptions[] => {
+  const modes: OnScreenDebuggerFilterOptions[] = ['fetch_xhr', 'other_network', 'all_network'];
+
+  families.forEach(f => {
+    Object.keys(f.urlPatterns).forEach(key => {
+      modes.push(buildNetworkApiFilterMode(f.id, key) as OnScreenDebuggerFilterOptions);
+    });
+    modes.push(
+      buildNetworkApiFilterMode(f.id, NETWORK_API_EVERY_SUBMODE) as OnScreenDebuggerFilterOptions
+    );
+  });
+
+  return modes;
+};
+
+const HTTP_METHOD_FILTER_PREFIX = 'http_method_' as const;
+
+export const NETWORK_HTTP_METHODS_FOR_FILTER = [
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'PATCH',
+  'DELETE',
+  'OPTIONS',
+] as const;
+
+const NETWORK_HTTP_METHODS_SET = new Set<string>(NETWORK_HTTP_METHODS_FOR_FILTER);
+
+export const buildHttpMethodFilterMode = (method: string): OnScreenDebuggerFilterOptions =>
+  `${HTTP_METHOD_FILTER_PREFIX}${method.toUpperCase()}` as OnScreenDebuggerFilterOptions;
+
+export const HTTP_METHOD_FILTER_MODES: readonly OnScreenDebuggerFilterOptions[] =
+  NETWORK_HTTP_METHODS_FOR_FILTER.map(m => buildHttpMethodFilterMode(m));
+
+export const getEntryHttpMethod = (entry: LogEntry): string =>
+  (entry.extraParams?.networkTraffic?.options?.method ?? 'GET').toUpperCase();
+
+export const filterNetworkTrafficByHttpMethod = (
+  entries: LogEntry[],
+  method: string
+): LogEntry[] => {
+  const upper = method.toUpperCase();
+
+  return entries.filter(entry => getEntryHttpMethod(entry) === upper);
+};
+
+export const parseHttpMethodFilterMode = (mode: string): string | null => {
+  if (!mode.startsWith(HTTP_METHOD_FILTER_PREFIX)) {
+    return null;
+  }
+
+  const suffix = mode.slice(HTTP_METHOD_FILTER_PREFIX.length).toUpperCase();
+
+  if (!NETWORK_HTTP_METHODS_SET.has(suffix)) {
+    return null;
+  }
+
+  return suffix;
+};
 
 // --- Pure functions ---
 
-export const isNetworkFilters = (filt: OnScreenDebuggerFilterOptions): boolean =>
-  NETWORK_FILTERS.includes(filt);
+export const isNetworkFilters = (
+  filt: OnScreenDebuggerFilterOptions,
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): boolean =>
+  listNetworkApiFilterModesFromFamilies(families).includes(filt) ||
+  HTTP_METHOD_FILTER_MODES.includes(filt as (typeof HTTP_METHOD_FILTER_MODES)[number]);
 
 /**
  * Safely parses a JSON string, returning a fallback value on failure.
@@ -180,20 +249,19 @@ export const filterNetworkTraffic = (
 };
 
 /**
- * Filters network traffic entries based on URL patterns.
+ * Filters network traffic for one family: either one pattern key or aggregate (`NETWORK_API_EVERY_SUBMODE`).
  */
-export const filterNetworkTrafficByUrl = (
+export const filterNetworkTrafficByUrlForFamily = (
   entries: LogEntry[],
-  filterType: 'dal' | 'sas' | 'logstash' | 'all_analytics'
+  urlPatterns: Record<string, string>,
+  patternKeyOrEvery: string
 ): LogEntry[] => {
-  const urlPatterns: Record<'dal' | 'sas' | 'logstash', string> = {
-    dal: 'dal.data.cbc.ca',
-    sas: 'cbc.ca/sas',
-    logstash: 'logstash-4.radio-canada.ca',
-  };
-
-  if (filterType === 'all_analytics') {
+  if (patternKeyOrEvery === NETWORK_API_EVERY_SUBMODE) {
     const allPatterns = Object.values(urlPatterns);
+
+    if (allPatterns.length === 0) {
+      return [];
+    }
 
     return entries.filter(entry => {
       const url = entry.extraParams?.networkTraffic?.url ?? '';
@@ -202,7 +270,11 @@ export const filterNetworkTrafficByUrl = (
     });
   }
 
-  const pattern = urlPatterns[filterType];
+  const pattern = urlPatterns[patternKeyOrEvery];
+
+  if (pattern === undefined) {
+    return [];
+  }
 
   return entries.filter(entry => {
     const url = entry.extraParams?.networkTraffic?.url ?? '';
@@ -228,10 +300,49 @@ const mapDebugEntries = (entries: LogEntry[]): EnhancedNavMap => {
   return entriesNav;
 };
 
-export const createNavMap = (entries: LogEntry[]): EnhancedNavMap => {
+const buildNetworkApiNavEntriesFromFamilies = (
+  families: NormalizedNetworkApiUrlPatternsFamily[]
+): EnhancedNavMap => {
+  const dynamic: EnhancedNavMap = {};
+
+  families.forEach(f => {
+    const containerId = networkApiFamilyContainerNavId(f.id);
+    const containerKey = networkApiFamilyContainerNavMapKey(f.id);
+
+    dynamic[containerKey] = {
+      id: containerId,
+      parent: CONTAINER,
+      orientation: 'horizontal',
+    };
+
+    Object.keys(f.urlPatterns).forEach(patternKey => {
+      const mk = networkApiFamilyPatternNavMapKey(f.id, patternKey);
+
+      dynamic[mk] = {
+        id: networkApiFamilyPatternNavId(f.id, patternKey),
+        parent: containerId,
+      };
+    });
+
+    const everyKey = networkApiFamilyEveryNavMapKey(f.id);
+
+    dynamic[everyKey] = {
+      id: networkApiFamilyEveryNavId(f.id),
+      parent: containerId,
+    };
+  });
+
+  return dynamic;
+};
+
+export const createNavMap = (
+  entries: LogEntry[],
+  networkApiFamilies: NormalizedNetworkApiUrlPatternsFamily[] = []
+): EnhancedNavMap => {
   const entriesNav = mapDebugEntries(entries);
   const entryKeys = Object.keys(entriesNav);
   const lastEntry = entriesNav[entryKeys[entryKeys.length - 1]];
+  const networkApiNavEntries = buildNetworkApiNavEntriesFromFamilies(networkApiFamilies);
 
   return {
     MODAL_CONTAINER: {
@@ -255,11 +366,6 @@ export const createNavMap = (entries: LogEntry[]): EnhancedNavMap => {
     },
     DEBUG_MODE_NETWORK_CONTAINER: {
       id: DEBUG_MODE_NETWORK_CONTAINER,
-      parent: CONTAINER,
-      orientation: 'horizontal',
-    },
-    DEBUG_MODE_NETWORK_API_CONTAINER: {
-      id: DEBUG_MODE_NETWORK_API_CONTAINER,
       parent: CONTAINER,
       orientation: 'horizontal',
     },
@@ -329,22 +435,40 @@ export const createNavMap = (entries: LogEntry[]): EnhancedNavMap => {
       id: DEBUG_MODE_ALL_NETWORK_BUTTON,
       parent: DEBUG_MODE_NETWORK_CONTAINER,
     },
-    DEBUG_MODE_DAL_BUTTON: {
-      id: DEBUG_MODE_DAL_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER: {
+      id: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+      parent: CONTAINER,
+      orientation: 'horizontal',
     },
-    DEBUG_MODE_SAS_BUTTON: {
-      id: DEBUG_MODE_SAS_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    DEBUG_MODE_HTTP_METHOD_GET_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_GET_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
     },
-    DEBUG_MODE_LOGSTASH_BUTTON: {
-      id: DEBUG_MODE_LOGSTASH_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
     },
-    DEBUG_MODE_ALL_ANALYTICS_BUTTON: {
-      id: DEBUG_MODE_ALL_ANALYTICS_BUTTON,
-      parent: DEBUG_MODE_NETWORK_API_CONTAINER,
+    DEBUG_MODE_HTTP_METHOD_POST_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_POST_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
     },
+    DEBUG_MODE_HTTP_METHOD_PUT_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_PUT_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON: {
+      id: DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON,
+      parent: DEBUG_MODE_NETWORK_HTTP_METHOD_CONTAINER,
+    },
+    ...networkApiNavEntries,
     RECORDING_STATUS_CONTAINER: {
       id: RECORDING_STATUS_CONTAINER,
       parent: CONTAINER,
@@ -469,32 +593,70 @@ export const NETWORK_TYPE_FILTER_BUTTONS: FilterButtonConfig[] = [
   },
 ];
 
-export const NETWORK_API_FILTER_BUTTONS: FilterButtonConfig[] = [
-  {
-    mode: 'dal',
-    navKey: 'DEBUG_MODE_DAL_BUTTON',
-    label: LABELS.BTN_FILTER_DAL,
-    ariaLabel: LABELS.ARIA_FILTER_DAL,
-  },
-  {
-    mode: 'sas',
-    navKey: 'DEBUG_MODE_SAS_BUTTON',
-    label: LABELS.BTN_FILTER_SAS,
-    ariaLabel: LABELS.ARIA_FILTER_SAS,
-  },
-  {
-    mode: 'logstash',
-    navKey: 'DEBUG_MODE_LOGSTASH_BUTTON',
-    label: LABELS.BTN_FILTER_LOGSTASH,
-    ariaLabel: LABELS.ARIA_FILTER_LOGSTASH,
-  },
-  {
-    mode: 'all_analytics',
-    navKey: 'DEBUG_MODE_ALL_ANALYTICS_BUTTON',
-    label: LABELS.BTN_FILTER_ALL_ANALYTICS,
-    ariaLabel: LABELS.ARIA_FILTER_ALL_ANALYTICS,
-  },
+const HTTP_METHOD_FILTER_BUTTON_NAV_KEYS: Record<
+  (typeof NETWORK_HTTP_METHODS_FOR_FILTER)[number],
+  FilterButtonConfig['navKey']
+> = {
+  GET: 'DEBUG_MODE_HTTP_METHOD_GET_BUTTON',
+  HEAD: 'DEBUG_MODE_HTTP_METHOD_HEAD_BUTTON',
+  POST: 'DEBUG_MODE_HTTP_METHOD_POST_BUTTON',
+  PUT: 'DEBUG_MODE_HTTP_METHOD_PUT_BUTTON',
+  PATCH: 'DEBUG_MODE_HTTP_METHOD_PATCH_BUTTON',
+  DELETE: 'DEBUG_MODE_HTTP_METHOD_DELETE_BUTTON',
+  OPTIONS: 'DEBUG_MODE_HTTP_METHOD_OPTIONS_BUTTON',
+};
+
+const HTTP_METHOD_FILTER_ARIA_LABELS: Record<
+  (typeof NETWORK_HTTP_METHODS_FOR_FILTER)[number],
+  string
+> = {
+  GET: LABELS.ARIA_FILTER_HTTP_METHOD_GET,
+  HEAD: LABELS.ARIA_FILTER_HTTP_METHOD_HEAD,
+  POST: LABELS.ARIA_FILTER_HTTP_METHOD_POST,
+  PUT: LABELS.ARIA_FILTER_HTTP_METHOD_PUT,
+  PATCH: LABELS.ARIA_FILTER_HTTP_METHOD_PATCH,
+  DELETE: LABELS.ARIA_FILTER_HTTP_METHOD_DELETE,
+  OPTIONS: LABELS.ARIA_FILTER_HTTP_METHOD_OPTIONS,
+};
+
+export const NETWORK_HTTP_METHOD_FILTER_BUTTONS: FilterButtonConfig[] = [
+  ...NETWORK_HTTP_METHODS_FOR_FILTER.map(
+    (method): FilterButtonConfig => ({
+      mode: buildHttpMethodFilterMode(method),
+      navKey: HTTP_METHOD_FILTER_BUTTON_NAV_KEYS[method],
+      label: method,
+      ariaLabel: HTTP_METHOD_FILTER_ARIA_LABELS[method],
+    })
+  ),
 ];
+
+export const buildNetworkApiFilterButtonsForFamily = (
+  family: NormalizedNetworkApiUrlPatternsFamily
+): FilterButtonConfig[] => {
+  const perKey = Object.keys(family.urlPatterns).map(
+    (key): FilterButtonConfig => ({
+      mode: buildNetworkApiFilterMode(family.id, key) as OnScreenDebuggerFilterOptions,
+      navKey: networkApiFamilyPatternNavMapKey(family.id, key),
+      label: key,
+      ariaLabel: `Network API filter (${family.name}): ${key}`,
+    })
+  );
+
+  const everyLabel = `Every ${family.name}`;
+
+  return [
+    ...perKey,
+    {
+      mode: buildNetworkApiFilterMode(
+        family.id,
+        NETWORK_API_EVERY_SUBMODE
+      ) as OnScreenDebuggerFilterOptions,
+      navKey: networkApiFamilyEveryNavMapKey(family.id),
+      label: everyLabel,
+      ariaLabel: everyLabel,
+    },
+  ];
+};
 
 export const RECORDING_BUTTONS: RecordingButtonConfig[] = [
   {

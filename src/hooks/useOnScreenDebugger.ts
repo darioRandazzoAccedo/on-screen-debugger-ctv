@@ -3,6 +3,10 @@ import { environment } from '@accedo/xdk-core';
 import { vKey, type Key } from '@accedo/xdk-virtual-key';
 
 import { useOnScreenDebuggerStore } from '../store/onScreenDebuggerStore';
+import {
+  type NetworkApiUrlPatternsFamily,
+  normalizeNetworkApiUrlPatternFamilies,
+} from '../networkApiUrlPatternsTypes';
 import { normalizeParams, getCallSiteInfo, parseResponseBody } from '../utils';
 import useEvent from './useEvent';
 import { IS_PROD } from '../config/env';
@@ -413,9 +417,17 @@ const createXMLHttpRequestInterceptor = ({
   } as any as typeof XMLHttpRequest;
 };
 
-const useOnScreenDebugger = () => {
+export type UseOnScreenDebuggerOptions = {
+  /** One toolbar section per element; each `urlPatterns` key is a filter; aggregate uses `Every ${name}`. */
+  networkUrlPatterns?: NetworkApiUrlPatternsFamily[];
+};
+
+const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
   const isOnScreenDebuggerEnabled = useOnScreenDebuggerStore(s => s.isEnabled);
   const debugModalVisibility = useOnScreenDebuggerStore(s => s.debugModalVisibility);
+  const setNetworkApiUrlPatternFamilies = useOnScreenDebuggerStore(
+    s => s.setNetworkApiUrlPatternFamilies
+  );
 
   const quickKeySequenceEnabled = useOnScreenDebuggerStore(s => s.quickKeySequence);
   const recordLog = useOnScreenDebuggerStore(s => s.recordLog);
@@ -425,6 +437,12 @@ const useOnScreenDebugger = () => {
   const recordError = useOnScreenDebuggerStore(s => s.recordError);
   const recordNetworkTraffic = useOnScreenDebuggerStore(s => s.recordNetworkTraffic);
   const { toggleDebugModal } = useToggleDebugModal();
+
+  useEffect(() => {
+    setNetworkApiUrlPatternFamilies(
+      normalizeNetworkApiUrlPatternFamilies(options?.networkUrlPatterns ?? [])
+    );
+  }, [options?.networkUrlPatterns, setNetworkApiUrlPatternFamilies]);
 
   // Ref to store original and wrapped functions
   const functionsRef = useRef<OriginalFunctions | null>(null);
