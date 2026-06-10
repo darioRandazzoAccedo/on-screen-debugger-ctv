@@ -1,5 +1,6 @@
 export { default as useOnScreenDebugger } from './hooks/useOnScreenDebugger';
 export type { UseOnScreenDebuggerOptions } from './hooks/useOnScreenDebugger';
+export type { DebugLevel } from './internalLogger';
 export type {
   NetworkApiUrlPatternsFamily,
   NormalizedNetworkApiUrlPatternsFamily,

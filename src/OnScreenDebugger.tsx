@@ -38,6 +38,7 @@ import {
   createNavMap,
 } from './onScreenDebuggerUtils';
 import OnScreenDebuggerToolbar from './OnScreenDebuggerToolbar';
+import { internalLogger } from './internalLogger';
 
 // IMPORTANT: do not use console.log or similar inside here,
 // this could cause weird UI bugs because a log (and similar) will
@@ -142,8 +143,8 @@ const OnScreenDebugger = () => {
       return;
     }
 
-    (window.console as any)?.warn(
-      'OnScreenDebugger - trying to set focus when not focusable or hidden ',
+    internalLogger.warn(
+      'OnScreenDebugger - trying to set focus when not focusable or hidden',
       value
     );
   }, []);

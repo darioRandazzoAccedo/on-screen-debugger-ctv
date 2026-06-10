@@ -319,6 +319,50 @@ Two entry points are published:
 
 ---
 
+## Publishing
+
+This package is published to the private Accedo Artifactory registry. The workflow below uses [npmrc](https://www.npmjs.com/package/npmrc) to switch between a **public** profile (used for installs and builds so that lock-files reference the public registry) and a **private** publish-specific profile (used only during `npm publish`).
+
+### 1. Create a publish-specific npmrc profile
+
+```bash
+# Create a new named profile (one-time setup)
+npmrc -c publish
+```
+
+Open the newly created `~/.npmrc-publish` (or wherever npmrc stores it) and replace any references to the public registry scope with the private Accedo registry, for example:
+
+```ini
+# ~/.npmrc-publish  (private / publish profile)
+@accedo:registry=https://repo.cloud.accedo.tv/artifactory/api/npm/accedo-ps-npm-local/
+//repo.cloud.accedo.tv/artifactory/api/npm/accedo-ps-npm-local/:_authToken=<YOUR_TOKEN>
+```
+
+Your default profile (`~/.npmrc` / the profile called `default`) should keep the public registry reference (`public-npm-repo`) so that installs and lock-files always resolve from there.
+
+### 2. Build using the public (default) profile
+
+Always build with the default profile so that generated lock-files contain references to the public registry:
+
+```bash
+npx npmrc default
+npm run build
+```
+
+### 3. Publish using the private profile
+
+Switch to the publish profile, run `npm publish`, then **immediately** switch back to the default profile to avoid corrupting lock-files:
+
+```bash
+npx npmrc publish
+npm publish
+npx npmrc default
+```
+
+> Always switch back to `default` right after publishing. Leaving the private profile active can cause subsequent installs or lock-file updates to record the private registry URL instead of the public one.
+
+---
+
 ## License
 
 Internal Accedo package — not for public distribution.
