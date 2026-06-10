@@ -10,6 +10,7 @@ import {
 import { normalizeParams, getCallSiteInfo, parseResponseBody } from '../utils';
 import useEvent from './useEvent';
 import { IS_PROD } from '../config/env';
+import { type DebugLevel, internalLogger, setInternalDebugLevel } from '../internalLogger';
 import useToggleDebugModal from './useToggleDebugModal';
 import { lrud } from '../navigation';
 import useDeviceListener from './useDeviceListener';
@@ -420,6 +421,12 @@ const createXMLHttpRequestInterceptor = ({
 export type UseOnScreenDebuggerOptions = {
   /** One toolbar section per element; each `urlPatterns` key is a filter; aggregate uses `Every ${name}`. */
   networkUrlPatterns?: NetworkApiUrlPatternsFamily[];
+  /**
+   * Verbosity of the debugger's own internal logging.
+   * Messages are emitted only when their severity is at or below this level.
+   * Default: 'warn'.
+   */
+  debugLevel?: DebugLevel;
 };
 
 const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
@@ -443,6 +450,10 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
       normalizeNetworkApiUrlPatternFamilies(options?.networkUrlPatterns ?? [])
     );
   }, [options?.networkUrlPatterns, setNetworkApiUrlPatternFamilies]);
+
+  useEffect(() => {
+    setInternalDebugLevel(options?.debugLevel ?? 'warn');
+  }, [options?.debugLevel]);
 
   // Ref to store original and wrapped functions
   const functionsRef = useRef<OriginalFunctions | null>(null);
@@ -711,6 +722,8 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
       wrappedSendBeacon,
     };
 
+    internalLogger.debug('console interception installed');
+
     // Intercept XMLHttpRequest with full logging
     (window as any).XMLHttpRequest = createXMLHttpRequestInterceptor({
       OriginalXMLHttpRequest,
@@ -750,9 +763,7 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
     if (typeof PerformanceObserver === 'undefined') {
       // PerformanceObserver NOT available - fetch wrapper will dispatch directly
       performanceObserverAvailableRef.current = false;
-      console.error(
-        '[useOnScreenDebugger] PerformanceObserver not available, using fetch wrapper fallback'
-      );
+      internalLogger.error('PerformanceObserver not available, using fetch wrapper fallback');
 
       return undefined;
     }
@@ -764,8 +775,8 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
       if (!hasResourceType) {
         // PerformanceObserver doesn't support 'resource' type - use fallback
         performanceObserverAvailableRef.current = false;
-        console.error(
-          '[useOnScreenDebugger] PerformanceObserver does not support resource type, using fetch wrapper fallback'
+        internalLogger.error(
+          'PerformanceObserver does not support resource type, using fetch wrapper fallback'
         );
 
         return undefined;
@@ -773,9 +784,7 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
     } else {
       // PerformanceObserver NOT available - use fallback
       performanceObserverAvailableRef.current = false;
-      console.warn(
-        '[useOnScreenDebugger] PerformanceObserver not fully supported, using fetch wrapper fallback'
-      );
+      internalLogger.warn('PerformanceObserver not fully supported, using fetch wrapper fallback');
 
       return undefined;
     }
@@ -911,14 +920,12 @@ const useOnScreenDebugger = (options?: UseOnScreenDebuggerOptions) => {
     try {
       (observer as any).observe({ type: 'resource', buffered: true });
 
-      console.info(
-        '[useOnScreenDebugger] Hybrid network monitoring started (PerformanceObserver + fetch/XHR)'
-      );
+      internalLogger.info('Hybrid network monitoring started (PerformanceObserver + fetch/XHR)');
     } catch (error) {
       // PerformanceObserver failed to start - use fallback
       performanceObserverAvailableRef.current = false;
-      console.error(
-        '[useOnScreenDebugger] PerformanceObserver failed to start, using fetch wrapper fallback:',
+      internalLogger.error(
+        'PerformanceObserver failed to start, using fetch wrapper fallback:',
         error
       );
 

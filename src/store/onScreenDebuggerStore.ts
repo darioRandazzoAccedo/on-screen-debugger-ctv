@@ -5,6 +5,7 @@ import type { CallSiteInfo } from '../utils';
 import type { NormalizedNetworkApiUrlPatternsFamily } from '../networkApiUrlPatternsTypes';
 import * as osdStorage from '../storage';
 import { APP_ENV } from '../config/env';
+import { internalLogger } from '../internalLogger';
 
 const IS_INTERNAL_BUILD = APP_ENV !== 'production';
 
@@ -360,7 +361,10 @@ export const useOnScreenDebuggerStore = create<OnScreenDebuggerStoreState>()(
           if (idx === -1) {
             networkTraffic.push(newEntry);
           } else {
-            console.error('trying to insert duplicate network traffic entry, SKIPPED: ', newEntry);
+            internalLogger.error(
+              'trying to insert duplicate network traffic entry, SKIPPED: ',
+              newEntry
+            );
           }
 
           return { networkTraffic };

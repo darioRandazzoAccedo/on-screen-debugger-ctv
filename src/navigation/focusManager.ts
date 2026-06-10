@@ -2,6 +2,7 @@ import type { Handler } from 'mitt';
 import type { Node } from '../lrud';
 
 import lrud from './lrud';
+import { internalLogger } from '../internalLogger';
 
 const focusManager = {
   changeFocus(id: string) {
@@ -10,7 +11,7 @@ const focusManager = {
     }
 
     if (!lrud.nodes[id]) {
-      console.error(`Attempting to focus non-registed node ${id}`);
+      internalLogger.error(`Attempting to focus non-registed node ${id}`);
 
       return;
     }
@@ -18,7 +19,7 @@ const focusManager = {
     try {
       lrud.assignFocus(id);
     } catch (e) {
-      console.error(e);
+      internalLogger.error('assignFocus failed:', e);
     }
   },
   getCurrentFocus() {

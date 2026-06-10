@@ -1,6 +1,7 @@
 import type { Node } from '../lrud';
 import { Lrud } from '../lrud';
 import type { onBlurParam } from '../lrud/interfaces';
+import { internalLogger } from '../internalLogger';
 
 const lrud = new Lrud();
 
@@ -25,7 +26,7 @@ export function focusFirstFocusableChild(id: string) {
   const firstFocusableChild = lrud.getNodeFirstFocusableChild(lrud.nodes[id]);
 
   if (!firstFocusableChild) {
-    console.warn(`${id} has no focusable children`);
+    internalLogger.warn(`${id} has no focusable children`);
 
     return;
   }

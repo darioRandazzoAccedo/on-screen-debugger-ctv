@@ -1,5 +1,7 @@
 import _isObject from 'lodash/isObject';
 
+import { internalLogger } from './internalLogger';
+
 const DEBUGGER_APP_START_DEV_OPTION = `accedo_debuggerAppStartDevOption`;
 
 const storage = {
@@ -9,7 +11,7 @@ const storage = {
 
       window.localStorage.setItem(key, stringifiedValue);
     } catch (error) {
-      console.error(error);
+      internalLogger.error('localStorage.setItem failed:', error);
     }
   },
   get: <T = string>(key: string): T => {
@@ -25,7 +27,7 @@ const storage = {
     try {
       window.localStorage.removeItem(key);
     } catch (error) {
-      console.error(error);
+      internalLogger.error('localStorage.removeItem failed:', error);
     }
   },
 };
